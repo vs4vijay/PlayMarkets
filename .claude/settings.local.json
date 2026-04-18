@@ -17,7 +17,9 @@
       "WebFetch(domain:rapidapi.com)",
       "WebFetch(domain:cricket-postman.sportmonks.com)",
       "WebFetch(domain:codemyworld.hashnode.dev)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)"
     ]
   }
 }
