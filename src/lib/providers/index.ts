@@ -6,6 +6,10 @@ import { getProviderConfig } from '@/lib/config';
 import type { CricketProvider } from './base';
 import { CricketDataProvider } from './cricketdata';
 import { EntitySportProvider } from './entitysport';
+import { SportmonksProvider } from './sportmonks';
+import { FreeWebAPIProvider } from './freewebapi';
+import { CricbuzzProvider } from './cricbuzz';
+import { RoanuzProvider } from './roanuz';
 import { MockProvider } from './mock';
 
 export { type CricketProvider };
@@ -33,6 +37,42 @@ export function getProvider(): CricketProvider {
 
     case 'entitysport':
       _provider = new EntitySportProvider(cfg.entitysport.token, cfg.entitysport.baseUrl);
+      break;
+
+    case 'sportmonks':
+      if (!cfg.sportmonks.token) {
+        console.warn('[PlayMarkets] SPORTMONKS_API_TOKEN not set — falling back to mock provider');
+        _provider = new MockProvider();
+      } else {
+        _provider = new SportmonksProvider(cfg.sportmonks.token, cfg.sportmonks.baseUrl);
+      }
+      break;
+
+    case 'freewebapi':
+      if (!cfg.freewebapi.rapidApiKey) {
+        console.warn('[PlayMarkets] RAPIDAPI_KEY not set — falling back to mock provider');
+        _provider = new MockProvider();
+      } else {
+        _provider = new FreeWebAPIProvider(cfg.freewebapi.rapidApiKey, cfg.freewebapi.baseUrl);
+      }
+      break;
+
+    case 'cricbuzz':
+      if (!cfg.cricbuzz.rapidApiKey) {
+        console.warn('[PlayMarkets] RAPIDAPI_KEY not set — falling back to mock provider');
+        _provider = new MockProvider();
+      } else {
+        _provider = new CricbuzzProvider(cfg.cricbuzz.rapidApiKey, cfg.cricbuzz.baseUrl);
+      }
+      break;
+
+    case 'roanuz':
+      if (!cfg.roanuz.apiKey) {
+        console.warn('[PlayMarkets] ROANUZ_API_KEY not set — falling back to mock provider');
+        _provider = new MockProvider();
+      } else {
+        _provider = new RoanuzProvider(cfg.roanuz.apiKey, cfg.roanuz.projectKey, cfg.roanuz.baseUrl);
+      }
       break;
 
     case 'mock':
