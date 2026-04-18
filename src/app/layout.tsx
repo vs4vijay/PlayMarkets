@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "APL - Agentic Premier League",
-  description: "Connect with fans around shared team loyalties and match experiences",
+  title: "CricPulse — India's Cricket Fan Zone",
+  description: "Live cricket scores, fan reactions, and match predictions for IPL and Indian cricket",
 };
 
 export default function RootLayout({
@@ -24,49 +24,65 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`}>
-      <body className="min-h-screen bg-zinc-50 dark:bg-black flex flex-col">
-        {/* Header */}
-        <header className="sticky top-0 z-50 bg-[#38003c] text-white">
-          <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+      <body className="min-h-screen bg-[#070d1a] flex flex-col">
+        {/* ── Header ──────────────────────────────────────────────────── */}
+        <header className="sticky top-0 z-50 bg-[#070d1a]/95 backdrop-blur-md border-b border-[#1e2d45]">
+          <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            {/* Logo */}
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#00ff85] rounded-lg flex items-center justify-center text-[#38003c] font-black text-xl">
-                A
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-lg"
+                style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}>
+                🏏
               </div>
               <div>
-                <h1 className="font-bold text-lg tracking-tight">APL</h1>
-                <p className="text-xs text-[#00ff85]">Agentic Premier League</p>
+                <span className="font-black text-lg tracking-tight">
+                  <span className="text-[#FF7722]">Cric</span>
+                  <span className="text-white">Pulse</span>
+                </span>
+                <p className="text-[10px] text-zinc-500 -mt-0.5">India's Cricket Fan Zone</p>
               </div>
             </div>
-            
-            <nav className="flex items-center gap-6 text-sm font-medium">
-              <a href="/" className="hover:text-[#00ff85] transition-colors">Matches</a>
-              <a href="#predictions" className="hover:text-[#00ff85] transition-colors">Predictions</a>
-              <a href="#teams" className="hover:text-[#00ff85] transition-colors">Teams</a>
-              <a href="#profile" className="px-4 py-2 bg-[#00ff85] text-[#38003c] rounded-lg font-bold hover:bg-white transition-colors">
+
+            {/* Nav */}
+            <nav className="flex items-center gap-1 text-sm font-medium">
+              <a href="/" className="px-3 py-1.5 text-zinc-300 hover:text-white hover:bg-[#1e2d45] rounded-lg transition-colors hidden sm:block">
+                Matches
+              </a>
+              <a href="#predictions" className="px-3 py-1.5 text-zinc-300 hover:text-white hover:bg-[#1e2d45] rounded-lg transition-colors hidden sm:block">
+                Predict
+              </a>
+              <a
+                href="#"
+                className="px-4 py-2 rounded-lg font-bold text-sm text-white transition-colors hover:opacity-90"
+                style={{ backgroundColor: '#003791' }}
+              >
                 Sign In
               </a>
             </nav>
           </div>
         </header>
-        
-        {/* Main Content */}
+
+        {/* ── Main Content ─────────────────────────────────────────────── */}
         <main className="flex-1">
           {children}
         </main>
-        
-        {/* Footer */}
-        <footer className="bg-zinc-100 dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800">
-          <div className="max-w-6xl mx-auto px-4 py-8">
+
+        {/* ── Footer ───────────────────────────────────────────────────── */}
+        <footer className="border-t border-[#1e2d45] bg-[#070d1a]">
+          <div className="max-w-5xl mx-auto px-4 py-8">
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-sm text-zinc-500">
-                <span className="font-bold text-[#38003c]">APL</span>
-                <span>·</span>
-                <span>Agentic Premier League</span>
+              <div className="flex items-center gap-2">
+                <span className="font-black text-base">
+                  <span className="text-[#FF7722]">Cric</span>
+                  <span className="text-white">Pulse</span>
+                </span>
+                <span className="text-zinc-600">·</span>
+                <span className="text-zinc-500 text-sm">India's Cricket Fan Zone</span>
               </div>
-              <div className="flex items-center gap-4 text-sm text-zinc-400">
-                <a href="#" className="hover:text-zinc-600">About</a>
-                <a href="#" className="hover:text-zinc-600">Privacy</a>
-                <a href="#" className="hover:text-zinc-600">Terms</a>
+              <div className="flex items-center gap-5 text-sm text-zinc-600">
+                <a href="#" className="hover:text-zinc-400 transition-colors">About</a>
+                <a href="#" className="hover:text-zinc-400 transition-colors">Privacy</a>
+                <a href="#" className="hover:text-zinc-400 transition-colors">Terms</a>
                 <span>© 2026</span>
               </div>
             </div>

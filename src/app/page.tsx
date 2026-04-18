@@ -1,198 +1,241 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { getMatches } from '@/lib/api';
-import { MatchCard } from '@/components/MatchCard';
+import { CricketMatchCard } from '@/components/CricketMatchCard';
 import { PredictionsPanel } from '@/components/Predictions';
 import { addReaction, getUserReactionTypes } from '@/store/reactions';
-import type { Match, MatchStatus, ReactionType } from '@/types';
+import type { CricketMatch, MatchStatus, ReactionType } from '@/types';
 
-type FilterTab = 'ALL' | 'LIVE' | 'FINISHED' | 'SCHEDULED';
+type FilterTab = 'ALL' | 'LIVE' | 'COMPLETED' | 'UPCOMING';
+type SectionView = 'LIVE' | 'RECENT' | 'UPCOMING';
 
-function filterMatches(matches: Match[], filter: FilterTab): Match[] {
-  if (filter === 'ALL') return matches;
-  return matches.filter(m => m.status === filter);
+const LIVE_STATUSES: MatchStatus[] = ['LIVE', 'TOSS', 'INNINGS_BREAK', 'DRINKS', 'LUNCH', 'TEA', 'STUMPS', 'RAIN_DELAY'];
+
+function categorize(matches: CricketMatch[]) {
+  const live = matches.filter((m) => LIVE_STATUSES.includes(m.status));
+  const recent = matches.filter((m) => m.status === 'COMPLETED');
+  const upcoming = matches.filter((m) => m.status === 'UPCOMING' || m.status === 'POSTPONED');
+  return { live, recent, upcoming };
 }
 
-function categorizeMatches(matches: Match[]) {
-  const now = new Date();
-  const HOUR = 60 * 60 * 1000;
-  const DAY = 24 * HOUR;
-
-  const live = matches.filter(m => m.status === 'LIVE' || m.status === 'HALFTIME');
-  const recent = matches.filter(m => 
-    m.status === 'FINISHED' && 
-    now.getTime() - m.startTime.getTime() < DAY
-  );
-  const upcoming = matches.filter(m => 
-    m.status === 'SCHEDULED' && 
-    m.startTime.getTime() > now.getTime()
-  );
-
-  return { live, recent, upcoming };
+function filterMatches(matches: CricketMatch[], tab: FilterTab): CricketMatch[] {
+  if (tab === 'ALL') return matches;
+  if (tab === 'LIVE') return matches.filter((m) => LIVE_STATUSES.includes(m.status));
+  if (tab === 'COMPLETED') return matches.filter((m) => m.status === 'COMPLETED');
+  return matches.filter((m) => m.status === 'UPCOMING' || m.status === 'POSTPONED');
 }
 
 const CURRENT_USER = { id: 'user-1', name: 'Fan' };
 
-export default function Home({ matches: initialMatches }: { matches?: Match[] }) {
-  const [matches, setMatches] = useState<Match[]>(initialMatches || []);
+function MatchSkeleton() {
+  return (
+    <div className="rounded-2xl bg-[#0e1628] border border-[#1e2d45] overflow-hidden animate-pulse">
+      <div className="h-9 bg-[#1e2d45]" />
+      <div className="p-4 flex items-center justify-between">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-[#1e2d45]" />
+          <div className="w-10 h-3 rounded bg-[#1e2d45]" />
+          <div className="w-20 h-3 rounded bg-[#1e2d45]" />
+        </div>
+        <div className="w-16 h-8 rounded bg-[#1e2d45]" />
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-14 h-14 rounded-full bg-[#1e2d45]" />
+          <div className="w-10 h-3 rounded bg-[#1e2d45]" />
+          <div className="w-20 h-3 rounded bg-[#1e2d45]" />
+        </div>
+      </div>
+      <div className="h-10 bg-[#1e2d45]/50" />
+    </div>
+  );
+}
+
+function LiveDot() {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75" />
+      <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500" />
+    </span>
+  );
+}
+
+export default function Home() {
+  const [matches, setMatches] = useState<CricketMatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filter, setFilter] = useState<FilterTab>('ALL');
+  const [section, setSection] = useState<SectionView>('LIVE');
   const [userReactions, setUserReactions] = useState<Map<string, Set<string>>>(new Map());
-  const [activeSection, setActiveSection] = useState<'LIVE' | 'RECENT' | 'UPCOMING'>('LIVE');
 
-  useEffect(() => {
-    getMatches().then(setMatches);
-  }, []);
+  const loadMatches = () => {
+    setLoading(true);
+    setError(null);
+    getMatches()
+      .then((data) => {
+        setMatches(data);
+        const { live } = categorize(data);
+        if (live.length === 0) setSection('RECENT');
+      })
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
+  };
 
-  const { live, recent, upcoming } = categorizeMatches(matches);
+  useEffect(() => { loadMatches(); }, []);
+
+  const { live, recent, upcoming } = categorize(matches);
   const filteredMatches = filterMatches(matches, filter);
 
   const handleReaction = (matchId: string, eventId: string | undefined, type: ReactionType) => {
     addReaction(matchId, eventId, type, CURRENT_USER.id, CURRENT_USER.name);
     const key = eventId ? `${matchId}:${eventId}` : matchId;
-    const reactionTypes = getUserReactionTypes(matchId, eventId, CURRENT_USER.id);
-    setUserReactions(prev => {
-      const newMap = new Map(prev);
-      newMap.set(key, new Set(reactionTypes));
-      return newMap;
-    });
+    const types = getUserReactionTypes(matchId, eventId, CURRENT_USER.id);
+    setUserReactions((prev) => new Map(prev).set(key, new Set(types)));
   };
 
-  const tabs: { label: string; value: FilterTab; count: number }[] = [
-    { label: 'All', value: 'ALL', count: matches.length },
-    { label: 'Live', value: 'LIVE', count: live.length },
-    { label: 'Finished', value: 'FINISHED', count: recent.length },
-    { label: 'Scheduled', value: 'SCHEDULED', count: upcoming.length },
+  const tabs: { label: string; value: FilterTab; count: number; dot?: boolean }[] = [
+    { label: 'All',      value: 'ALL',       count: matches.length },
+    { label: 'Live',     value: 'LIVE',      count: live.length,    dot: live.length > 0 },
+    { label: 'Results',  value: 'COMPLETED', count: recent.length },
+    { label: 'Upcoming', value: 'UPCOMING',  count: upcoming.length },
   ];
 
+  const sectionMatches =
+    section === 'LIVE' ? live : section === 'RECENT' ? recent : upcoming;
+
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-white">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#38003c] via-[#1a001e] to-[#0c0c0c] px-4 py-16 md:py-24">
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-[#00ff85] rounded-full blur-[128px]" />
-          <div className="absolute bottom-10 right-10 w-64 h-64 bg-[#ff0058] rounded-full blur-[128px]" />
+    <div className="min-h-screen bg-[#070d1a] text-white">
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#003791]/40 via-[#070d1a]/80 to-[#070d1a] px-4 py-14 md:py-20">
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-[#003791] rounded-full blur-[120px]" />
+          <div className="absolute top-10 right-1/4 w-48 h-48 bg-[#FF7722] rounded-full blur-[100px]" />
         </div>
-        <div className="relative max-w-6xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-4">
-            <span className="text-[#00ff85]">APL</span>
-            <span className="text-white"> Fan Zone</span>
+        <div className="relative max-w-5xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF7722]/15 border border-[#FF7722]/30 mb-5">
+            <LiveDot />
+            <span className="text-xs font-semibold text-[#FF7722]">
+              {live.length > 0
+                ? `${live.length} match${live.length > 1 ? 'es' : ''} in progress`
+                : 'Live scores & fan reactions'}
+            </span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-3">
+            <span className="text-[#FF7722]">Cric</span>
+            <span className="text-white">Pulse</span>
           </h1>
-          <p className="text-xl md:text-2xl text-zinc-300 max-w-2xl mx-auto">
-            Connect with fans around shared team loyalties
+          <p className="text-lg md:text-xl text-zinc-300 max-w-xl mx-auto">
+            India's cricket fan zone — live scores, reactions &amp; predictions
           </p>
         </div>
       </section>
 
-      {/* Filter Tabs */}
-      <section className="sticky top-0 z-40 bg-[#0c0c0c]/95 backdrop-blur-md border-b border-zinc-800">
-        <div className="max-w-6xl mx-auto px-4 py-3">
-          <div className="flex gap-1 overflow-x-auto">
-            {tabs.map(tab => (
+      {/* ── Filter Tabs ───────────────────────────────────────────────── */}
+      <section className="sticky top-16 z-40 bg-[#070d1a]/95 backdrop-blur-md border-b border-[#1e2d45]">
+        <div className="max-w-5xl mx-auto px-4 py-2.5">
+          <div className="flex gap-1.5 overflow-x-auto">
+            {tabs.map((tab) => (
               <button
                 key={tab.value}
                 onClick={() => setFilter(tab.value)}
-                className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${
+                className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   filter === tab.value
-                    ? 'bg-[#00ff85] text-[#38003c]'
-                    : 'bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700'
+                    ? 'bg-[#FF7722] text-white'
+                    : 'bg-[#0e1628] text-zinc-400 hover:text-white hover:bg-[#1e2d45]'
                 }`}
               >
+                {tab.dot && <LiveDot />}
                 {tab.label}
-                <span className="ml-2 text-xs opacity-70">({tab.count})</span>
+                <span className={`text-xs ${filter === tab.value ? 'opacity-80' : 'opacity-50'}`}>
+                  ({tab.count})
+                </span>
               </button>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Section Toggles (for All view) */}
-      {filter === 'ALL' && (
-        <section className="max-w-6xl mx-auto px-4 py-6">
+      {/* ── Section toggles (ALL view only) ──────────────────────────── */}
+      {filter === 'ALL' && !loading && (
+        <section className="max-w-5xl mx-auto px-4 pt-5">
           <div className="flex gap-2">
-            {[
-              { label: 'LIVE NOW', value: 'LIVE', color: 'text-red-500', activeColor: 'bg-red-500 text-white' },
-              { label: 'Recent Results', value: 'RECENT', color: 'text-zinc-400', activeColor: 'bg-zinc-400 text-black' },
-              { label: 'Upcoming', value: 'UPCOMING', color: 'text-[#00ff85]', activeColor: 'bg-[#00ff85] text-black' },
-            ].map(section => (
+            {([
+              { value: 'LIVE',     label: 'Live Now', count: live.length,     activeClass: 'bg-red-600 text-white' },
+              { value: 'RECENT',   label: 'Results',  count: recent.length,   activeClass: 'bg-zinc-600 text-white' },
+              { value: 'UPCOMING', label: 'Upcoming', count: upcoming.length, activeClass: 'bg-[#003791] text-white' },
+            ] as const).map((s) => (
               <button
-                key={section.value}
-                onClick={() => setActiveSection(section.value as 'LIVE' | 'RECENT' | 'UPCOMING')}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
-                  activeSection === section.value
-                    ? section.activeColor
-                    : `bg-zinc-900 ${section.color}`
+                key={s.value}
+                onClick={() => setSection(s.value)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
+                  section === s.value ? s.activeClass : 'bg-[#0e1628] text-zinc-400 hover:text-white'
                 }`}
               >
-                {section.label}
+                {s.value === 'LIVE' && section === 'LIVE' && <LiveDot />}
+                {s.label}
+                <span className="text-xs opacity-70">({s.count})</span>
               </button>
             ))}
           </div>
         </section>
       )}
 
-      {/* Match Grid */}
-      <main className="max-w-6xl mx-auto px-4 pb-16">
-        {filter === 'ALL' ? (
-          // Show filtered section
-          (() => {
-            const sectionMatches = activeSection === 'LIVE' ? live : activeSection === 'RECENT' ? recent : upcoming;
-            if (sectionMatches.length === 0) {
-              return (
-                <div className="text-center py-16">
-                  <p className="text-zinc-500 text-lg">
-                    {activeSection === 'LIVE' && 'No live matches right now'}
-                    {activeSection === 'RECENT' && 'No recent results'}
-                    {activeSection === 'UPCOMING' && 'No upcoming matches'}
-                  </p>
-                </div>
-              );
-            }
+      {/* ── Match Grid ────────────────────────────────────────────────── */}
+      <main className="max-w-5xl mx-auto px-4 pt-5 pb-24">
+        {error && (
+          <div className="text-center py-12">
+            <p className="text-red-400 text-sm mb-3">Failed to load matches: {error}</p>
+            <button
+              onClick={loadMatches}
+              className="px-4 py-2 bg-[#003791] text-white rounded-lg text-sm hover:bg-[#0047c2] transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {loading && !error && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => <MatchSkeleton key={i} />)}
+          </div>
+        )}
+
+        {!loading && !error && (() => {
+          const displayMatches = filter === 'ALL' ? sectionMatches : filteredMatches;
+          if (displayMatches.length === 0) {
             return (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {sectionMatches.map(match => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    onReact={handleReaction}
-                    userReactions={userReactions.get(match.id) || new Set()}
-                  />
-                ))}
+              <div className="text-center py-16">
+                <span className="text-5xl">🏏</span>
+                <p className="text-zinc-500 text-sm mt-4">
+                  {filter === 'LIVE' && 'No live matches right now'}
+                  {filter === 'COMPLETED' && 'No recent results'}
+                  {filter === 'UPCOMING' && 'No upcoming matches'}
+                  {filter === 'ALL' && section === 'LIVE' && 'No live matches right now'}
+                  {filter === 'ALL' && section === 'RECENT' && 'No recent results'}
+                  {filter === 'ALL' && section === 'UPCOMING' && 'No upcoming matches'}
+                </p>
               </div>
             );
-          })()
-        ) : (
-          // Show filtered matches (All, Live, Finished, Scheduled)
-          filteredMatches.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-zinc-500 text-lg">No matches found</p>
-            </div>
-          ) : (
+          }
+          return (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredMatches.map(match => (
-                <MatchCard
+              {displayMatches.map((match) => (
+                <CricketMatchCard
                   key={match.id}
                   match={match}
                   onReact={handleReaction}
-                  userReactions={userReactions.get(match.id) || new Set()}
+                  userReactions={userReactions.get(match.id) ?? new Set()}
                 />
               ))}
             </div>
-          )
-        )}
+          );
+        })()}
       </main>
 
-      {/* Predictions Panel */}
-      <PredictionsPanel matches={matches} userId={CURRENT_USER.id} userName={CURRENT_USER.name} />
-
-      {/* Footer */}
-      <footer className="border-t border-zinc-800 bg-[#0c0c0c] py-8">
-        <div className="max-w-6xl mx-auto px-4 text-center">
-          <p className="text-zinc-500 text-sm">
-            ⚽ Agentic Premier League Fan Platform
-          </p>
-        </div>
-      </footer>
+      <PredictionsPanel
+        matches={matches}
+        userId={CURRENT_USER.id}
+        userName={CURRENT_USER.name}
+      />
     </div>
   );
 }

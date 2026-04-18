@@ -1,55 +1,104 @@
-// APL - Agentic Premier League
+// CricPulse - India's Cricket Fan Zone
 // Core data types for the fan engagement platform
 
-export interface Team {
+// ─── Teams ────────────────────────────────────────────────────────────────────
+
+export interface CricketTeam {
   id: string;
   name: string;
   shortName: string;
-  logo: string;
+  logo?: string;
   primaryColor: string;
   secondaryColor: string;
+  country?: string;
 }
 
-export interface Match {
+// ─── Score / Innings ──────────────────────────────────────────────────────────
+
+export interface CricketScore {
+  runs: number;
+  wickets: number;
+  overs: number;        // e.g. 19.3
+  runRate?: number;     // current run rate
+  extras?: number;
+  inningNumber: 1 | 2;
+  isComplete: boolean;
+}
+
+// ─── Match ────────────────────────────────────────────────────────────────────
+
+export interface CricketMatch {
   id: string;
-  homeTeam: Team;
-  awayTeam: Team;
-  homeScore: number;
-  awayScore: number;
+  name: string;                    // "MI vs CSK, IPL 2026 – Match 28"
+  matchType: MatchType;
   status: MatchStatus;
-  startTime: Date;
-  competition: string;
+  statusNote?: string;             // "CSK need 45 runs in 30 balls"
+  result?: string;                 // "MI won by 4 runs"
   venue: string;
-  matchday?: number;
-  events: MatchEvent[];
+  startTime: Date;
+  homeTeam: CricketTeam;
+  awayTeam: CricketTeam;
+  homeScore?: CricketScore;        // first/latest innings for home team
+  awayScore?: CricketScore;        // first/latest innings for away team
+  currentBatting?: 'home' | 'away';
+  series?: string;                 // competition/series name
+  matchNumber?: number;
+  toss?: TossInfo;
+  events: CricketEvent[];
 }
 
-export type MatchStatus = 
-  | 'SCHEDULED' 
-  | 'LIVE' 
-  | 'HALFTIME' 
-  | 'FINISHED' 
-  | 'POSTPONED' 
-  | 'CANCELLED';
+export type MatchType = 'T20' | 'ODI' | 'TEST' | 'T10' | 'OTHER';
 
-export interface MatchEvent {
+export type MatchStatus =
+  | 'UPCOMING'
+  | 'TOSS'
+  | 'LIVE'
+  | 'INNINGS_BREAK'
+  | 'DRINKS'
+  | 'LUNCH'
+  | 'TEA'
+  | 'STUMPS'
+  | 'RAIN_DELAY'
+  | 'COMPLETED'
+  | 'ABANDONED'
+  | 'CANCELLED'
+  | 'POSTPONED';
+
+export interface TossInfo {
+  winner: string;              // team name
+  decision: 'bat' | 'field';
+}
+
+// ─── Match Events ─────────────────────────────────────────────────────────────
+
+export interface CricketEvent {
   id: string;
-  type: EventType;
-  minute: number;
-  player: string;
+  type: CricketEventType;
+  over?: number;
+  ball?: number;
+  batsman?: string;
+  bowler?: string;
+  fielder?: string;
   team: 'home' | 'away';
-  description?: string;
+  description: string;
+  runs?: number;               // runs scored on this ball
 }
 
-export type EventType = 
-  | 'GOAL' 
-  | 'OWN_GOAL' 
-  | 'PENALTY' 
-  | 'MISSED_PENALTY'
-  | 'YELLOW_CARD' 
-  | 'RED_CARD'
-  | 'SUBSTITUTION'
-  | 'VAR_DECISION';
+export type CricketEventType =
+  | 'WICKET'
+  | 'BOUNDARY_FOUR'
+  | 'BOUNDARY_SIX'
+  | 'FIFTY'
+  | 'CENTURY'
+  | 'MAIDEN_OVER'
+  | 'REVIEW_SUCCESS'
+  | 'REVIEW_FAILED'
+  | 'NO_BALL'
+  | 'WIDE'
+  | 'MATCH_START'
+  | 'INNINGS_END';
+
+// ─── Reactions ────────────────────────────────────────────────────────────────
 
 export interface Reaction {
   id: string;
@@ -63,6 +112,8 @@ export interface Reaction {
 
 export type ReactionType = '🔥' | '💪' | '😭' | '🙌' | '😱' | '👀';
 
+// ─── Comments ─────────────────────────────────────────────────────────────────
+
 export interface Comment {
   id: string;
   matchId: string;
@@ -75,21 +126,26 @@ export interface Comment {
   replies: Comment[];
 }
 
+// ─── Users ────────────────────────────────────────────────────────────────────
+
 export interface User {
   id: string;
   name: string;
   avatar?: string;
-  favoredTeams: Team[];
+  favoriteTeams: CricketTeam[];
   predictions: Prediction[];
   createdAt: Date;
 }
+
+// ─── Predictions ──────────────────────────────────────────────────────────────
 
 export interface Prediction {
   id: string;
   matchId: string;
   userId: string;
-  predictedHomeScore: number;
-  predictedAwayScore: number;
+  predictedWinner: string;           // team name
+  predictedHomeRuns?: number;        // predicted runs for home team
+  predictedAwayRuns?: number;        // predicted runs for away team
   isPublic: boolean;
   createdAt: Date;
   points?: number;

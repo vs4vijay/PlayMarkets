@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:cricketdata.org)",
+      "WebFetch(domain:www.doc.entitysport.com)",
+      "Bash(bun run dev)",
+      "Bash(bun run build)",
+      "Bash(bun run *)",
+      "Bash(npm run *)",
+      "Bash(curl -s http://localhost:3000/api/matches)",
+      "Bash(kill %1)"
+    ]
+  }
+}

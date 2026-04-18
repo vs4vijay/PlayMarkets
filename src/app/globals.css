@@ -1,30 +1,24 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --apl-primary: #38003c;
-  --apl-secondary: #00ff85;
-  --apl-accent: #ff0058;
+  /* CricPulse design tokens */
+  --background:    #070d1a;   /* deep navy */
+  --foreground:    #f1f5f9;
+  --card-bg:       #0e1628;
+  --border:        #1e2d45;
+
+  /* Brand */
+  --india-blue:    #003791;
+  --saffron:       #FF7722;
+  --teal:          #00D4B4;
+  --live-red:      #EF4444;
 }
 
 @theme inline {
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-foreground:  var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  
-  --color-apl-primary: #38003c;
-  --color-apl-secondary: #00ff85;
-  --color-apl-accent: #ff0058;
-  --color-apl-dark: #0c0c0c;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c0c0c;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -33,51 +27,30 @@ body {
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #2d3d55; }
+
+/* ── Transitions (no-motion safe) ───────────────────────────────────────────── */
+@media (prefers-reduced-motion: no-preference) {
+  * {
+    transition-property: background-color, border-color, color, opacity, box-shadow, transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+  }
 }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
-
-/* Smooth transitions */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Match card animations */
+/* ── Live pulse animation ───────────────────────────────────────────────────── */
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+  50%       { opacity: 0.4; }
 }
+.animate-live { animation: pulse-live 1.5s ease-in-out infinite; }
 
-.animate-live {
-  animation: pulse-live 1.5s ease-in-out infinite;
-}
-
-/* Team logo placeholder */
-.team-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  color: white;
-  font-size: 14px;
+/* ── Score font ─────────────────────────────────────────────────────────────── */
+.score-font {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
