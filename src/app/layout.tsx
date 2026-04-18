@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CricPulse — India's Cricket Fan Zone",
-  description: "Live cricket scores, fan reactions, and match predictions for IPL and Indian cricket",
+  title: "PlayMarkets — The Social Prediction Layer for Live Sports",
+  description: "Live sports scores, fan reactions, and social predictions — predict, react, and compete in real-time",
 };
 
 export default function RootLayout({
@@ -32,14 +32,14 @@ export default function RootLayout({
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-lg"
                 style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}>
-                🏏
+                🎯
               </div>
               <div>
                 <span className="font-black text-lg tracking-tight">
-                  <span className="text-[#FF7722]">Cric</span>
-                  <span className="text-white">Pulse</span>
+                  <span className="text-[#FF7722]">Play</span>
+                  <span className="text-white">Markets</span>
                 </span>
-                <p className="text-[10px] text-zinc-500 -mt-0.5">India's Cricket Fan Zone</p>
+                <p className="text-[10px] text-zinc-500 -mt-0.5">The Social Prediction Layer for Live Sports</p>
               </div>
             </div>
 
@@ -73,11 +73,11 @@ export default function RootLayout({
             <div className="flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <span className="font-black text-base">
-                  <span className="text-[#FF7722]">Cric</span>
-                  <span className="text-white">Pulse</span>
+                  <span className="text-[#FF7722]">Play</span>
+                  <span className="text-white">Markets</span>
                 </span>
                 <span className="text-zinc-600">·</span>
-                <span className="text-zinc-500 text-sm">India's Cricket Fan Zone</span>
+                <span className="text-zinc-500 text-sm">The Social Prediction Layer for Live Sports</span>
               </div>
               <div className="flex items-center gap-5 text-sm text-zinc-600">
                 <a href="#" className="hover:text-zinc-400 transition-colors">About</a>

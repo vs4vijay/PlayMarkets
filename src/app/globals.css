@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  /* CricPulse design tokens */
+  /* PlayMarkets design tokens */
   --background:    #070d1a;   /* deep navy */
   --foreground:    #f1f5f9;
   --card-bg:       #0e1628;

@@ -1,4 +1,4 @@
-// CricPulse - India's Cricket Fan Zone
+// PlayMarkets — The Social Prediction Layer for Live Sports
 // Core data types for the fan engagement platform
 
 // ─── Teams ────────────────────────────────────────────────────────────────────

@@ -24,7 +24,7 @@ export function getProvider(): CricketProvider {
   switch (cfg.name) {
     case 'cricketdata':
       if (!cfg.cricketdata.apiKey) {
-        console.warn('[CricPulse] CRICKETDATA_API_KEY not set — falling back to mock provider');
+        console.warn('[PlayMarkets] CRICKETDATA_API_KEY not set — falling back to mock provider');
         _provider = new MockProvider();
       } else {
         _provider = new CricketDataProvider(cfg.cricketdata.apiKey, cfg.cricketdata.baseUrl);
@@ -41,6 +41,6 @@ export function getProvider(): CricketProvider {
       break;
   }
 
-  console.info(`[CricPulse] Using provider: ${_provider.name}`);
+  console.info(`[PlayMarkets] Using provider: ${_provider.name}`);
   return _provider;
 }

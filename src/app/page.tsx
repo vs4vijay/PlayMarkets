@@ -116,15 +116,15 @@ export default function Home() {
             <span className="text-xs font-semibold text-[#FF7722]">
               {live.length > 0
                 ? `${live.length} match${live.length > 1 ? 'es' : ''} in progress`
-                : 'Live scores & fan reactions'}
+                : 'Live sports · social predictions'}
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-3">
-            <span className="text-[#FF7722]">Cric</span>
-            <span className="text-white">Pulse</span>
+            <span className="text-[#FF7722]">Play</span>
+            <span className="text-white">Markets</span>
           </h1>
           <p className="text-lg md:text-xl text-zinc-300 max-w-xl mx-auto">
-            India's cricket fan zone — live scores, reactions &amp; predictions
+            The social prediction layer for live sports — react, predict &amp; compete in real-time
           </p>
         </div>
       </section>

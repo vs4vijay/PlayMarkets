@@ -6,9 +6,9 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Project Overview
 
-**CricPulse** — India's Cricket Fan Zone
+**PlayMarkets** — The Social Prediction Layer for Live Sports
 
-A Next.js 16 sports fan engagement platform for Indian cricket (IPL + national team). Users can:
+A Next.js 16 sports fan engagement platform focused on Indian cricket (IPL + national team). Users can:
 - View live, recent, and upcoming cricket matches
 - React to matches/events with emojis
 - Make score & winner predictions
