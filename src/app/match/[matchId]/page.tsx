@@ -326,11 +326,11 @@ function PredictionForm({
         <button onClick={handleSubmit} disabled={!winner || saving}
           className="w-full py-4 rounded-2xl font-black text-white text-sm transition-all disabled:opacity-30 hover:opacity-90 active:scale-[0.98]"
           style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}>
-          {saving ? 'Saving…' : prediction ? '✓ Update Prediction' : 'Lock In Prediction →'}
+          {saving ? 'Saving…' : prediction ? '✓ Update Prediction' : 'Play Your Shot →'}
         </button>
         {!prediction && (
           <p className="text-center text-[11px] text-zinc-500 mt-2">
-            {PREDICTION_STAKE} pts staked on submit · returned at scoring
+            {PREDICTION_STAKE} pts will be staked
           </p>
         )}
       </div>
