@@ -19,7 +19,9 @@
       "WebFetch(domain:codemyworld.hashnode.dev)",
       "Bash(npx tsc *)",
       "Bash(netstat -ano)",
-      "Bash(findstr :3000)"
+      "Bash(findstr :3000)",
+      "Bash(bun --version)",
+      "Bash(bun add *)"
     ]
   }
 }

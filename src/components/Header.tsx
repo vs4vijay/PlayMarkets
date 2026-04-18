@@ -50,11 +50,10 @@ export function Header() {
             Matches
           </a>
           <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); }}
+            href="/leaderboard"
             className="px-3 py-1.5 text-zinc-400 hover:text-white hover:bg-[#1e2d45] rounded-lg transition-colors hidden sm:block"
           >
-            Predict
+            Leaderboard
           </a>
 
           {user ? (

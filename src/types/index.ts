@@ -143,10 +143,25 @@ export interface Prediction {
   id: string;
   matchId: string;
   userId: string;
+  userName: string;                  // stored at submission time for leaderboard display
   predictedWinner: string;           // team name
   predictedHomeRuns?: number;        // predicted runs for home team
   predictedAwayRuns?: number;        // predicted runs for away team
   isPublic: boolean;
   createdAt: Date;
   points?: number;
+  scored?: boolean;                  // true once evaluated against the match result
+}
+
+// ─── Leaderboard ──────────────────────────────────────────────────────────────
+
+export interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  userName: string;
+  totalPoints: number;
+  predictionsCount: number;  // total predictions submitted
+  scoredCount: number;       // predictions evaluated so far
+  correctCount: number;      // correct winner calls
+  accuracy: number;          // 0–100 percentage (correctCount / scoredCount)
 }
