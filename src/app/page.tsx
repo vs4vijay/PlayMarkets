@@ -85,6 +85,23 @@ export default function Home() {
   const { live, recent, upcoming } = categorize(matches);
   const filteredMatches = filterMatches(matches, filter);
 
+  // Poll every 30 s — but only while live matches exist.
+  // Stops automatically once all matches complete; resumes if new ones go live.
+  const hasLiveMatches = live.length > 0;
+  useEffect(() => {
+    if (!hasLiveMatches) return;
+    const id = setInterval(() => {
+      getMatches()
+        .then((data) => {
+          setMatches(data);
+          const { live: updatedLive } = categorize(data);
+          if (updatedLive.length === 0) setSection((s) => s === 'LIVE' ? 'RECENT' : s);
+        })
+        .catch(() => { /* silent — avoid overwriting visible error from initial load */ });
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [hasLiveMatches]);
+
   const userId   = user?.id   ?? 'anonymous';
   const userName = user?.name ?? 'Fan';
 

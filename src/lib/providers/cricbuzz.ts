@@ -168,7 +168,7 @@ export class CricbuzzProvider implements CricketProvider {
   private async fetchByType(type: 'live' | 'recent' | 'upcoming'): Promise<CricketMatch[]> {
     const res = await fetch(`${this.baseUrl}/matches/v1/${type}`, {
       headers: this.headers(),
-      next: { revalidate: type === 'live' ? 30 : 120 },
+      ...(type === 'live' ? { cache: 'no-store' as const } : { next: { revalidate: 3600 } }),
     });
     if (!res.ok) throw new Error(`Cricbuzz error: ${res.status} ${res.statusText}`);
     const json: CBResponse = await res.json();

@@ -106,7 +106,7 @@ export class CricketDataProvider implements CricketProvider {
   async getMatchById(id: string): Promise<CricketMatch | null> {
     try {
       const url = `${this.baseUrl}/match_info?apikey=${this.apiKey}&id=${encodeURIComponent(id)}`;
-      const res = await fetch(url, { next: { revalidate: 30 } });
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return null;
       const json: { status: string; data?: CricketDataMatch } = await res.json();
       if (json.status !== 'success' || !json.data) return null;
@@ -120,16 +120,17 @@ export class CricketDataProvider implements CricketProvider {
 
   private async fetchCurrentMatches(): Promise<CricketMatch[]> {
     const url = `${this.baseUrl}/currentMatches?apikey=${this.apiKey}&offset=0`;
-    return this.fetchAndNormalize(url);
+    return this.fetchAndNormalize(url, true);
   }
 
   private async fetchScheduledMatches(): Promise<CricketMatch[]> {
     const url = `${this.baseUrl}/matches?apikey=${this.apiKey}&offset=0`;
-    return this.fetchAndNormalize(url);
+    return this.fetchAndNormalize(url, false);
   }
 
-  private async fetchAndNormalize(url: string): Promise<CricketMatch[]> {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+  private async fetchAndNormalize(url: string, live: boolean): Promise<CricketMatch[]> {
+    const cacheOpts = live ? { cache: 'no-store' as const } : { next: { revalidate: 3600 } };
+    const res = await fetch(url, cacheOpts);
     if (!res.ok) {
       throw new Error(`CricketData API error: ${res.status} ${res.statusText}`);
     }

@@ -125,7 +125,7 @@ export class EntitySportProvider implements CricketProvider {
   async getMatchById(id: string): Promise<CricketMatch | null> {
     try {
       const url = `${this.baseUrl}/matches/${encodeURIComponent(id)}/scorecard?token=${this.token}`;
-      const res = await fetch(url, { next: { revalidate: 30 } });
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return null;
       const json: ESResponse = await res.json();
       const item = json.data?.items?.[0];
@@ -143,7 +143,8 @@ export class EntitySportProvider implements CricketProvider {
    */
   private async fetchByStatus(status: 1 | 2 | 3): Promise<CricketMatch[]> {
     const url = `${this.baseUrl}/matches/?token=${this.token}&status=${status}&per_page=20&paged=1`;
-    const res = await fetch(url, { next: { revalidate: 60 } });
+    const cacheOpts = status === 2 ? { cache: 'no-store' as const } : { next: { revalidate: 3600 } };
+    const res = await fetch(url, cacheOpts);
     if (!res.ok) {
       throw new Error(`EntitySport API error: ${res.status} ${res.statusText}`);
     }

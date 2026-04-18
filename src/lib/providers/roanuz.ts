@@ -164,7 +164,7 @@ export class RoanuzProvider implements CricketProvider {
       `${this.baseUrl}/cricket/${encodeURIComponent(this.projectKey)}/featured-matches/`,
       {
         headers: { 'rs-token': token },
-        next: { revalidate: 60 },
+        cache: 'no-store',
       }
     );
     if (!res.ok) throw new Error(`Roanuz error: ${res.status} ${res.statusText}`);

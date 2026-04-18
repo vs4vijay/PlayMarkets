@@ -19,6 +19,9 @@ function serializeMatches(matches: CricketMatch[]) {
   }));
 }
 
+// Prevent Next.js from caching the route response — live scores must always be fresh.
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -50,16 +53,15 @@ export async function GET(request: NextRequest) {
         matches = await provider.getMatches();
     }
 
-    return Response.json({
-      matches: serializeMatches(matches),
-      provider: provider.name,
-      total: matches.length,
-    });
+    return Response.json(
+      { matches: serializeMatches(matches), provider: provider.name, total: matches.length },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   } catch (err) {
     console.error('[/api/matches] Error:', err);
     return Response.json(
       { error: 'Failed to fetch matches', detail: err instanceof Error ? err.message : String(err) },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } },
     );
   }
 }

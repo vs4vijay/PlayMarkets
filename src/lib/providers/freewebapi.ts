@@ -135,7 +135,7 @@ export class FreeWebAPIProvider implements CricketProvider {
     try {
       const res = await fetch(`${this.baseUrl}/matches/get-info?id=${encodeURIComponent(id)}`, {
         headers: this.headers(),
-        next: { revalidate: 30 },
+        cache: 'no-store',
       });
       if (!res.ok) return null;
       const json: { matchInfo?: FWAMatchInfo; matchScore?: FWAMatchScore } = await res.json();
@@ -158,7 +158,7 @@ export class FreeWebAPIProvider implements CricketProvider {
   private async fetchAll(): Promise<CricketMatch[]> {
     const res = await fetch(`${this.baseUrl}/matches/list`, {
       headers: this.headers(),
-      next: { revalidate: 60 },
+      cache: 'no-store',
     });
     if (!res.ok) throw new Error(`FreeWebAPI error: ${res.status} ${res.statusText}`);
     const json: FWAListResponse = await res.json();

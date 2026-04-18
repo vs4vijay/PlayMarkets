@@ -108,7 +108,7 @@ export class SportmonksProvider implements CricketProvider {
   async getMatchById(id: string): Promise<CricketMatch | null> {
     try {
       const url = this.url(`/fixtures/${encodeURIComponent(id)}`, { include: 'runs,localteam,visitorteam' });
-      const res = await fetch(url, { next: { revalidate: 30 } });
+      const res = await fetch(url, { cache: 'no-store' });
       if (!res.ok) return null;
       const json: SMResponse = await res.json();
       if (!json.data || Array.isArray(json.data)) return null;
@@ -127,16 +127,17 @@ export class SportmonksProvider implements CricketProvider {
 
   private async fetchLivescores(): Promise<CricketMatch[]> {
     const url = this.url('/livescores', { include: 'runs,localteam,visitorteam' });
-    return this.fetchAndNormalize(url);
+    return this.fetchAndNormalize(url, true);
   }
 
   private async fetchFixtures(): Promise<CricketMatch[]> {
     const url = this.url('/fixtures', { include: 'runs,localteam,visitorteam', per_page: '50' });
-    return this.fetchAndNormalize(url);
+    return this.fetchAndNormalize(url, false);
   }
 
-  private async fetchAndNormalize(url: string): Promise<CricketMatch[]> {
-    const res = await fetch(url, { next: { revalidate: 60 } });
+  private async fetchAndNormalize(url: string, live: boolean): Promise<CricketMatch[]> {
+    const cacheOpts = live ? { cache: 'no-store' as const } : { next: { revalidate: 3600 } };
+    const res = await fetch(url, cacheOpts);
     if (!res.ok) throw new Error(`Sportmonks API error: ${res.status} ${res.statusText}`);
     const json: SMResponse = await res.json();
     const data = json.data;
