@@ -61,6 +61,18 @@ function PredictionCard({ match, prediction, onPredict, onUpdate }: PredictionCa
     setEditing(false);
   };
 
+  const pts = prediction?.points;
+  const ptsColor =
+    pts === undefined || !prediction?.scored ? ''
+    : pts > 0  ? 'text-[#00D4B4]'
+    : pts < 0  ? 'text-red-400'
+    : 'text-zinc-500';
+  const ptsLabel =
+    pts === undefined || !prediction?.scored ? null
+    : pts > 0  ? `+${pts} pts`
+    : pts === 0 ? '0 pts'
+    : `${pts} pts`;
+
   return (
     <div className="bg-[#0e1628] rounded-xl p-4 border border-[#1e2d45]">
       {/* Teams header */}
@@ -171,25 +183,35 @@ function PredictionCard({ match, prediction, onPredict, onUpdate }: PredictionCa
               {prediction.predictedHomeRuns} – {prediction.predictedAwayRuns}
             </span>
           </div>
-          {prediction.scored && (
+          {prediction.scored && ptsLabel && (
             <div className="flex items-center justify-between text-xs mt-1 pt-1.5 border-t border-[#1e2d45]">
-              <span className="text-zinc-500">Points earned</span>
-              <span
-                className={`font-black text-sm ${
-                  (prediction.points ?? 0) > 0 ? 'text-[#FF7722]' : 'text-zinc-500'
-                }`}
-              >
-                {(prediction.points ?? 0) > 0 ? `+${prediction.points}` : '0'} pts
-              </span>
+              <span className="text-zinc-500">Points</span>
+              <span className={`font-black text-sm ${ptsColor}`}>{ptsLabel}</span>
             </div>
           )}
+          <a
+            href={`/leaderboard/${match.id}`}
+            className="block w-full text-center mt-1 py-1 text-[10px] text-[#00D4B4] hover:underline"
+          >
+            Match leaderboard →
+          </a>
         </div>
       )}
 
       {!canPredict && !prediction && (
-        <p className="text-[10px] text-zinc-600 text-center py-1">
-          {match.status === 'COMPLETED' ? 'No prediction made' : 'Match already in progress'}
-        </p>
+        <div className="space-y-1.5">
+          <p className="text-[10px] text-zinc-600 text-center py-1">
+            {match.status === 'COMPLETED' ? 'No prediction made' : 'Match already in progress'}
+          </p>
+          {match.status === 'COMPLETED' && (
+            <a
+              href={`/leaderboard/${match.id}`}
+              className="block w-full text-center py-1 text-[10px] text-zinc-500 hover:text-[#00D4B4] hover:underline"
+            >
+              See who predicted →
+            </a>
+          )}
+        </div>
       )}
     </div>
   );
@@ -221,19 +243,19 @@ export function PredictionsPanel({
       .catch(() => {/* use local state as fallback */});
   }, [userId]);
 
-  const upcomingMatches     = matches.filter((m) => m.status === 'UPCOMING').slice(0, 6);
-  const completedWithPreds  = matches
+  const upcomingMatches    = matches.filter((m) => m.status === 'UPCOMING').slice(0, 6);
+  const completedWithPreds = matches
     .filter((m) => m.status === 'COMPLETED' && userPredictions.has(m.id))
     .slice(0, 3);
-  const displayMatches      = [...upcomingMatches, ...completedWithPreds];
-  const totalPredictions    = userPredictions.size;
+  const displayMatches     = [...upcomingMatches, ...completedWithPreds];
+  const totalPredictions   = userPredictions.size;
 
   const persist = (matchId: string, prediction: Prediction) => {
     savePrediction({
       userId,
       userName,
       matchId,
-      predictedWinner:  prediction.predictedWinner,
+      predictedWinner:   prediction.predictedWinner,
       predictedHomeRuns: prediction.predictedHomeRuns ?? 0,
       predictedAwayRuns: prediction.predictedAwayRuns ?? 0,
       isPublic: prediction.isPublic,

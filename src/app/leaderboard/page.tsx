@@ -1,9 +1,9 @@
-// Leaderboard page — server component.
+// Global leaderboard — server component.
 // Calls storage + scoring directly (no HTTP round-trip).
 
-import { getStore } from '@/lib/storage';
+import { getStore, getUserStore } from '@/lib/storage';
 import { getProvider } from '@/lib/providers';
-import { computeLeaderboard } from '@/lib/scoring';
+import { computeLeaderboard, STARTING_BALANCE } from '@/lib/scoring';
 import type { LeaderboardEntry } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -11,17 +11,23 @@ export const dynamic = 'force-dynamic';
 const RANK_MEDAL: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 async function loadLeaderboard() {
-  const store = getStore();
-  const provider = getProvider();
-  const [predictions, matches] = await Promise.all([
+  const store     = getStore();
+  const userStore = getUserStore();
+  const provider  = getProvider();
+  const [predictions, matches, users] = await Promise.all([
     store.getAllPredictions(),
     provider.getMatches(),
+    userStore.getAllUsers(),
   ]);
-  const { newlyScored, leaderboard } = computeLeaderboard(predictions, matches);
-  // Persist any newly scored predictions.
-  await Promise.all(
-    newlyScored.map((p) => store.updatePrediction(p.id, { points: p.points, scored: true })),
-  );
+  const userBalanceMap = new Map(users.map((u) => [u.id, u.balance]));
+  const { newlyScored, leaderboard, userBalanceUpdates } =
+    computeLeaderboard(predictions, matches, userBalanceMap);
+  await Promise.all([
+    ...newlyScored.map((p) => store.updatePrediction(p.id, { points: p.points, scored: true })),
+    ...userBalanceUpdates.map(({ userId, newBalance }) =>
+      userStore.updateUser(userId, { balance: newBalance }),
+    ),
+  ]);
   return leaderboard;
 }
 
@@ -54,6 +60,11 @@ export default async function LeaderboardPage() {
               ? `${leaderboard.length} predictor${leaderboard.length !== 1 ? 's' : ''} competing`
               : 'Be the first to make predictions'}
           </p>
+          <div className="mt-4 flex items-center justify-center gap-4 text-xs text-zinc-500">
+            <span>Starting balance: <strong className="text-zinc-300">{STARTING_BALANCE} pts</strong></span>
+            <span>·</span>
+            <a href="/rules" className="text-[#FF7722] hover:underline">View scoring rules →</a>
+          </div>
         </div>
       </section>
 
@@ -74,11 +85,11 @@ export default async function LeaderboardPage() {
             {/* ── Full rankings table ───────────────────────────────────── */}
             {rest.length > 0 && (
               <div className="rounded-2xl border border-[#1e2d45] overflow-hidden">
-                <div className="grid grid-cols-[2rem_1fr_5rem_4rem_4rem_4rem] gap-x-3 px-4 py-2.5 bg-[#0e1628] border-b border-[#1e2d45] text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
+                <div className="grid grid-cols-[2rem_1fr_5rem_5rem_4rem_4rem] gap-x-3 px-4 py-2.5 bg-[#0e1628] border-b border-[#1e2d45] text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
                   <span>#</span>
                   <span>Player</span>
+                  <span className="text-right">Balance</span>
                   <span className="text-right">Points</span>
-                  <span className="text-right">Scored</span>
                   <span className="text-right">Correct</span>
                   <span className="text-right">Acc%</span>
                 </div>
@@ -97,8 +108,12 @@ export default async function LeaderboardPage() {
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
-  const medal = RANK_MEDAL[entry.rank] ?? `#${entry.rank}`;
+  const medal  = RANK_MEDAL[entry.rank] ?? `#${entry.rank}`;
   const isFirst = entry.rank === 1;
+  const balanceColor =
+    entry.balance > STARTING_BALANCE ? 'text-[#00D4B4]'
+    : entry.balance < STARTING_BALANCE ? 'text-red-400'
+    : 'text-zinc-300';
 
   return (
     <div
@@ -116,11 +131,15 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
         {entry.userName.slice(0, 1).toUpperCase()}
       </div>
       <p className="font-bold text-white truncate max-w-full text-sm">{entry.userName}</p>
-      <p className={`text-2xl font-black ${isFirst ? 'text-[#FF7722]' : 'text-white'}`}>
-        {entry.totalPoints} <span className="text-xs font-normal text-zinc-500">pts</span>
-      </p>
+      {/* Balance */}
+      <div className="w-full px-3 py-1.5 rounded-lg bg-[#070d1a]/60 border border-[#1e2d45]">
+        <p className="text-[10px] text-zinc-500">Balance</p>
+        <p className={`text-xl font-black ${balanceColor}`}>
+          {entry.balance.toLocaleString()} <span className="text-xs font-normal text-zinc-500">pts</span>
+        </p>
+      </div>
       <div className="flex gap-3 text-xs text-zinc-500">
-        <span>{entry.scoredCount} scored</span>
+        <span>{entry.totalPoints > 0 ? '+' : ''}{entry.totalPoints} earned</span>
         <span>·</span>
         <span className="text-[#00D4B4]">{entry.accuracy}% acc</span>
       </div>
@@ -129,9 +148,14 @@ function PodiumCard({ entry }: { entry: LeaderboardEntry }) {
 }
 
 function TableRow({ entry, striped }: { entry: LeaderboardEntry; striped: boolean }) {
+  const balanceColor =
+    entry.balance > STARTING_BALANCE ? 'text-[#00D4B4]'
+    : entry.balance < STARTING_BALANCE ? 'text-red-400'
+    : 'text-zinc-300';
+
   return (
     <div
-      className={`grid grid-cols-[2rem_1fr_5rem_4rem_4rem_4rem] gap-x-3 px-4 py-3 items-center text-sm ${
+      className={`grid grid-cols-[2rem_1fr_5rem_5rem_4rem_4rem] gap-x-3 px-4 py-3 items-center text-sm ${
         striped ? 'bg-[#0e1628]/50' : ''
       }`}
     >
@@ -145,10 +169,16 @@ function TableRow({ entry, striped }: { entry: LeaderboardEntry; striped: boolea
         </div>
         <span className="font-semibold text-white truncate">{entry.userName}</span>
       </div>
-      <span className="text-right font-black text-[#FF7722]">{entry.totalPoints}</span>
-      <span className="text-right text-zinc-400">{entry.scoredCount}</span>
-      <span className="text-right text-[#00D4B4]">{entry.correctCount}</span>
-      <span className="text-right text-zinc-400">{entry.accuracy}%</span>
+      <span className={`text-right font-black text-sm ${balanceColor}`}>
+        {entry.balance.toLocaleString()}
+      </span>
+      <span className={`text-right font-bold text-xs ${
+        entry.totalPoints > 0 ? 'text-[#FF7722]' : entry.totalPoints < 0 ? 'text-red-400' : 'text-zinc-400'
+      }`}>
+        {entry.totalPoints > 0 ? '+' : ''}{entry.totalPoints}
+      </span>
+      <span className="text-right text-[#00D4B4] text-xs">{entry.correctCount}</span>
+      <span className="text-right text-zinc-400 text-xs">{entry.accuracy}%</span>
     </div>
   );
 }
@@ -161,12 +191,20 @@ function EmptyState() {
       <p className="text-zinc-600 text-sm">
         Make predictions on upcoming matches — the leaderboard updates once results are in.
       </p>
-      <a
-        href="/"
-        className="inline-block mt-6 px-6 py-2.5 bg-[#FF7722] text-white font-bold rounded-xl hover:bg-[#ff8c3a] transition-colors text-sm"
-      >
-        View Matches
-      </a>
+      <div className="flex gap-3 justify-center mt-6">
+        <a
+          href="/"
+          className="inline-block px-6 py-2.5 bg-[#FF7722] text-white font-bold rounded-xl hover:bg-[#ff8c3a] transition-colors text-sm"
+        >
+          View Matches
+        </a>
+        <a
+          href="/rules"
+          className="inline-block px-6 py-2.5 border border-[#1e2d45] text-zinc-300 font-bold rounded-xl hover:bg-[#1e2d45] transition-colors text-sm"
+        >
+          Read Rules
+        </a>
+      </div>
     </div>
   );
 }

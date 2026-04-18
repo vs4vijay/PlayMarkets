@@ -131,11 +131,11 @@ export interface Comment {
 export interface User {
   id: string;
   name: string;
-  avatar?: string;
-  favoriteTeams: CricketTeam[];
-  predictions: Prediction[];
+  balance: number;    // point balance — starts at STARTING_BALANCE (200)
   createdAt: Date;
 }
+
+export const STARTING_BALANCE = 200;
 
 // ─── Predictions ──────────────────────────────────────────────────────────────
 
@@ -149,7 +149,7 @@ export interface Prediction {
   predictedAwayRuns?: number;        // predicted runs for away team
   isPublic: boolean;
   createdAt: Date;
-  points?: number;
+  points?: number;                   // net points earned/lost (can be negative)
   scored?: boolean;                  // true once evaluated against the match result
 }
 
@@ -159,9 +159,23 @@ export interface LeaderboardEntry {
   rank: number;
   userId: string;
   userName: string;
-  totalPoints: number;
+  balance: number;           // current point balance (starting + earned/lost)
+  totalPoints: number;       // sum of all prediction points (can be negative)
   predictionsCount: number;  // total predictions submitted
   scoredCount: number;       // predictions evaluated so far
   correctCount: number;      // correct winner calls
   accuracy: number;          // 0–100 percentage (correctCount / scoredCount)
+}
+
+// ─── Per-Match Leaderboard ────────────────────────────────────────────────────
+
+export interface MatchLeaderboardEntry {
+  rank: number;
+  userId: string;
+  userName: string;
+  predictedWinner: string;
+  predictedHomeRuns?: number;
+  predictedAwayRuns?: number;
+  points?: number;           // undefined if match not yet completed
+  isCorrectWinner: boolean;
 }

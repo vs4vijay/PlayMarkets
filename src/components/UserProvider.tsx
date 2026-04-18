@@ -9,18 +9,23 @@ import {
   useRef,
   type ReactNode,
 } from 'react';
+import { registerUser, getUser } from '@/lib/api';
+import { STARTING_BALANCE } from '@/types';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface AppUser {
   id: string;
   name: string;
+  balance: number;
 }
 
 interface UserContextValue {
   user: AppUser | null;
   /** Called by the modal when the user submits a name */
   setUsername: (name: string) => void;
+  /** Refresh the balance from the server */
+  refreshBalance: () => Promise<void>;
   signOut: () => void;
   openModal: () => void;
 }
@@ -41,8 +46,9 @@ function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-const STORAGE_KEY_NAME = 'pm_username';
-const STORAGE_KEY_ID   = 'pm_user_id';
+const STORAGE_KEY_NAME    = 'pm_username';
+const STORAGE_KEY_ID      = 'pm_user_id';
+const STORAGE_KEY_BALANCE = 'pm_user_balance';
 
 // ── Username modal ────────────────────────────────────────────────────────────
 
@@ -52,7 +58,6 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    // Small delay so the animation has started before focusing
     const t = setTimeout(() => inputRef.current?.focus(), 80);
     return () => clearTimeout(t);
   }, []);
@@ -73,7 +78,6 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
   };
 
   return (
-    /* Full-screen backdrop */
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#070d1a]/80 backdrop-blur-md px-4">
       <div
         className="w-full max-w-sm rounded-2xl border border-[#1e2d45] bg-[#0e1628] shadow-2xl shadow-black/60 p-8"
@@ -95,9 +99,19 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
           <span className="text-[#FF7722]">Play</span>
           <span className="text-white">Markets</span>
         </h2>
-        <p className="text-sm text-zinc-400 text-center mb-8">
+        <p className="text-sm text-zinc-400 text-center mb-2">
           Pick a username and start predicting
         </p>
+
+        {/* Starting balance callout */}
+        <div className="mb-6 px-4 py-2.5 rounded-xl bg-[#FF7722]/10 border border-[#FF7722]/20 text-center">
+          <p className="text-xs text-[#FF7722] font-bold">
+            🎁 You&apos;ll start with {STARTING_BALANCE} pts to play with
+          </p>
+          <p className="text-[10px] text-zinc-400 mt-0.5">
+            Win more by predicting correctly. Wrong calls cost you pts.
+          </p>
+        </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -130,7 +144,7 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
             className="w-full py-3 rounded-xl font-black text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
             style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
           >
-            Let&apos;s Play →
+            Claim my {STARTING_BALANCE} pts →
           </button>
         </form>
 
@@ -158,12 +172,23 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
   // Read from localStorage after mount (avoids SSR mismatch)
   useEffect(() => {
-    const name = localStorage.getItem(STORAGE_KEY_NAME);
-    const id   = localStorage.getItem(STORAGE_KEY_ID);
+    const name    = localStorage.getItem(STORAGE_KEY_NAME);
+    const id      = localStorage.getItem(STORAGE_KEY_ID);
+    const balance = parseInt(localStorage.getItem(STORAGE_KEY_BALANCE) ?? '', 10);
+
     if (name && id) {
-      setUser({ id, name });
+      setUser({ id, name, balance: isNaN(balance) ? STARTING_BALANCE : balance });
+      // Refresh balance from server in the background.
+      getUser(id)
+        .then((serverUser) => {
+          if (serverUser) {
+            localStorage.setItem(STORAGE_KEY_BALANCE, String(serverUser.balance));
+            setUser((prev) => prev ? { ...prev, balance: serverUser.balance } : prev);
+          }
+        })
+        .catch(() => {/* server unavailable — use cached balance */});
     } else {
-      setModal(true); // First visit — show modal immediately
+      setModal(true);
     }
     setHydrated(true);
   }, []);
@@ -175,24 +200,51 @@ export function UserProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY_ID, id);
     }
     localStorage.setItem(STORAGE_KEY_NAME, name);
-    setUser({ id, name });
+
+    // Register with the server to get starting balance.
+    registerUser(id, name)
+      .then((serverUser) => {
+        localStorage.setItem(STORAGE_KEY_BALANCE, String(serverUser.balance));
+        setUser({ id: serverUser.id, name: serverUser.name, balance: serverUser.balance });
+      })
+      .catch(() => {
+        // Offline fallback — show starting balance.
+        localStorage.setItem(STORAGE_KEY_BALANCE, String(STARTING_BALANCE));
+        setUser({ id, name, balance: STARTING_BALANCE });
+      });
+
+    // Optimistic update while the request is in flight.
+    const cachedBalance = parseInt(localStorage.getItem(STORAGE_KEY_BALANCE) ?? '', 10);
+    setUser({ id, name, balance: isNaN(cachedBalance) ? STARTING_BALANCE : cachedBalance });
     setModal(false);
+  }, []);
+
+  const refreshBalance = useCallback(async () => {
+    const id = localStorage.getItem(STORAGE_KEY_ID);
+    if (!id) return;
+    try {
+      const serverUser = await getUser(id);
+      if (serverUser) {
+        localStorage.setItem(STORAGE_KEY_BALANCE, String(serverUser.balance));
+        setUser((prev) => prev ? { ...prev, balance: serverUser.balance } : prev);
+      }
+    } catch {/* ignore */}
   }, []);
 
   const signOut = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY_NAME);
     localStorage.removeItem(STORAGE_KEY_ID);
+    localStorage.removeItem(STORAGE_KEY_BALANCE);
     setUser(null);
     setModal(true);
   }, []);
 
   const openModal = useCallback(() => setModal(true), []);
 
-  // Don't render children until we know hydration state (prevents flash)
   if (!hydrated) return null;
 
   return (
-    <UserContext.Provider value={{ user, setUsername, signOut, openModal }}>
+    <UserContext.Provider value={{ user, setUsername, refreshBalance, signOut, openModal }}>
       {children}
       {showModal && <UsernameModal onSubmit={setUsername} />}
     </UserContext.Provider>

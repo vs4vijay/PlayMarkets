@@ -287,12 +287,22 @@ export function CricketMatchCard({ match, onReact, userReactions }: CricketMatch
             </button>
           ))}
         </div>
-        {isLive && (
-          <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            LIVE
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {match.status === 'COMPLETED' && (
+            <a
+              href={`/leaderboard/${match.id}`}
+              className="text-[10px] font-semibold text-[#00D4B4] hover:underline flex items-center gap-1"
+            >
+              🏆 Rankings
+            </a>
+          )}
+          {isLive && (
+            <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              LIVE
+            </span>
+          )}
+        </div>
       </div>
     </div>
   );
