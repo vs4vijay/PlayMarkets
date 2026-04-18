@@ -24,7 +24,7 @@
 //   this balance in real time.
 
 import type { Prediction, CricketMatch, LeaderboardEntry, MatchType, User } from '@/types';
-import { STARTING_BALANCE } from '@/types';
+import { STARTING_BALANCE, PREDICTION_STAKE } from '@/types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -154,19 +154,23 @@ export function computeLeaderboard(
     };
     bucket.predictionsCount += 1;
     if (pred.scored) {
-      bucket.scoredCount    += 1;
-      bucket.totalPoints    += pred.points ?? 0;
+      bucket.scoredCount += 1;
+      bucket.totalPoints += pred.points ?? 0;            // net after stake (can be negative)
       if ((pred.points ?? 0) >= 10) bucket.correctCount += 1;
     }
     byUser.set(pred.userId, bucket);
   }
 
   // Build balance-delta map from newly scored predictions.
+  // Each scored prediction returns the stake that was deducted at submit time,
+  // plus the net points earned/lost.  Total = stake + calcPoints().
+  // For void matches calcPoints() = 0 so only the stake is returned.
   const deltaByUser = new Map<string, number>();
   for (const pred of newlyScored) {
+    const stakeReturn = pred.stake ?? PREDICTION_STAKE;
     deltaByUser.set(
       pred.userId,
-      (deltaByUser.get(pred.userId) ?? 0) + (pred.points ?? 0),
+      (deltaByUser.get(pred.userId) ?? 0) + stakeReturn + (pred.points ?? 0),
     );
   }
 

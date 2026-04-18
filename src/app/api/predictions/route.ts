@@ -3,15 +3,23 @@
 // GET  /api/predictions?userId=X          — all predictions for a user
 // GET  /api/predictions?matchId=X         — all predictions for a match (scorecard)
 // POST /api/predictions                   — create or update a prediction
+//
+// Stake behaviour:
+//   NEW prediction  → deduct PREDICTION_STAKE from user balance immediately.
+//   UPDATE          → no additional deduction (stake already paid).
+//   Scoring (async) → stake is returned plus net points at result time.
 
 import type { NextRequest } from 'next/server';
-import { getStore } from '@/lib/storage';
+import { getStore, getUserStore } from '@/lib/storage';
 import { getProvider } from '@/lib/providers';
-import type { Prediction } from '@/types';
+import { PREDICTION_STAKE, STARTING_BALANCE } from '@/types';
+import type { Prediction, User } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
 const NO_STORE = { headers: { 'Cache-Control': 'no-store' } };
+
+const LOCKED_STATUSES = ['COMPLETED', 'ABANDONED', 'CANCELLED'];
 
 // ── GET ───────────────────────────────────────────────────────────────────────
 
@@ -72,43 +80,61 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    // Predictions can only be made / updated for UPCOMING matches.
+    // Predictions are locked once a match is COMPLETED, ABANDONED, or CANCELLED.
     const provider = getProvider();
     const match = await provider.getMatchById(matchId);
     if (!match) {
       return Response.json({ error: 'Match not found' }, { status: 404, ...NO_STORE });
     }
-    if (match.status !== 'UPCOMING') {
+    if (LOCKED_STATUSES.includes(match.status)) {
       return Response.json(
-        { error: 'Predictions can only be made for upcoming matches' },
+        { error: 'Predictions are locked for this match' },
         { status: 422, ...NO_STORE },
       );
     }
 
-    const store = getStore();
-    const existing = await store.getPrediction(userId, matchId);
+    const store     = getStore();
+    const userStore = getUserStore();
+    const existing  = await store.getPrediction(userId, matchId);
 
     let prediction: Prediction;
     let status: number;
+    let newBalance: number | null = null;
 
     if (existing) {
-      // Update — overwrite fields that may have changed, keep id + createdAt.
+      // Update — no additional stake deduction.
       await store.updatePrediction(existing.id, {
         userName,
         predictedWinner,
         predictedHomeRuns,
         predictedAwayRuns,
         isPublic,
-        // Reset scoring if the prediction changes (shouldn't matter for UPCOMING but be safe).
-        points: undefined,
-        scored: false,
+        points:  undefined,
+        scored:  false,
       });
       prediction = { ...existing, userName, predictedWinner, predictedHomeRuns, predictedAwayRuns, isPublic };
       status = 200;
     } else {
-      // Create.
+      // New prediction — deduct stake from user balance.
+      const user = await userStore.getUser(userId);
+
+      if (!user) {
+        // User hasn't registered via /api/users yet — create them on the fly.
+        const newUser: User = {
+          id:        userId,
+          name:      userName,
+          balance:   STARTING_BALANCE - PREDICTION_STAKE,
+          createdAt: new Date(),
+        };
+        await userStore.createUser(newUser);
+        newBalance = newUser.balance;
+      } else {
+        newBalance = user.balance - PREDICTION_STAKE;
+        await userStore.updateUser(userId, { balance: newBalance });
+      }
+
       prediction = {
-        id: `pred-${matchId}-${userId}-${Date.now()}`,
+        id:                `pred-${matchId}-${userId}-${Date.now()}`,
         matchId,
         userId,
         userName,
@@ -116,14 +142,22 @@ export async function POST(request: NextRequest) {
         predictedHomeRuns,
         predictedAwayRuns,
         isPublic,
-        createdAt: new Date(),
-        scored: false,
+        createdAt:         new Date(),
+        stake:             PREDICTION_STAKE,
+        scored:            false,
       };
       await store.savePrediction(prediction);
       status = 201;
     }
 
-    return Response.json({ prediction: serializePrediction(prediction) }, { status, ...NO_STORE });
+    return Response.json(
+      {
+        prediction: serializePrediction(prediction),
+        // Return the updated balance so the client can refresh immediately.
+        ...(newBalance !== null ? { balance: newBalance } : {}),
+      },
+      { status, ...NO_STORE },
+    );
   } catch (err) {
     console.error('[/api/predictions POST]', err);
     return Response.json({ error: 'Failed to save prediction' }, { status: 500, ...NO_STORE });

@@ -86,7 +86,7 @@ export async function getUserPredictions(userId: string): Promise<Prediction[]> 
 export async function savePrediction(payload: {
   userId: string; userName: string; matchId: string;
   predictedWinner: string; predictedHomeRuns: number; predictedAwayRuns: number; isPublic?: boolean;
-}): Promise<Prediction> {
+}): Promise<{ prediction: Prediction; balance?: number }> {
   const res = await fetch('/api/predictions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -94,7 +94,10 @@ export async function savePrediction(payload: {
   });
   if (!res.ok) throw new Error(`Failed to save prediction: ${res.status}`);
   const json = await res.json();
-  return revivePrediction(json.prediction as Record<string, unknown>);
+  return {
+    prediction: revivePrediction(json.prediction as Record<string, unknown>),
+    balance: typeof json.balance === 'number' ? json.balance : undefined,
+  };
 }
 
 // ── Leaderboard ───────────────────────────────────────────────────────────────

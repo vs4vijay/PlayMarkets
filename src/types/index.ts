@@ -135,7 +135,8 @@ export interface User {
   createdAt: Date;
 }
 
-export const STARTING_BALANCE = 200;
+export const STARTING_BALANCE  = 200;
+export const PREDICTION_STAKE  = 10;   // pts deducted when a prediction is submitted
 
 // ─── Predictions ──────────────────────────────────────────────────────────────
 
@@ -149,7 +150,8 @@ export interface Prediction {
   predictedAwayRuns?: number;        // predicted runs for away team
   isPublic: boolean;
   createdAt: Date;
-  points?: number;                   // net points earned/lost (can be negative)
+  stake?: number;                    // pts deducted at submission time (default PREDICTION_STAKE)
+  points?: number;                   // net points earned/lost after stake (can be negative)
   scored?: boolean;                  // true once evaluated against the match result
 }
 

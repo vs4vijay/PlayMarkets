@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import type { CricketMatch, CricketScore, ReactionType, CricketEventType } from '@/types';
+import type { CricketMatch, CricketScore, ReactionType, CricketEventType, Prediction } from '@/types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -118,9 +118,11 @@ interface CricketMatchCardProps {
   match: CricketMatch;
   onReact: (matchId: string, eventId: string | undefined, type: ReactionType) => void;
   userReactions: Set<string>;
+  prediction?: Prediction;
+  onPredictClick?: () => void;
 }
 
-export function CricketMatchCard({ match, onReact, userReactions }: CricketMatchCardProps) {
+export function CricketMatchCard({ match, onReact, userReactions, prediction, onPredictClick }: CricketMatchCardProps) {
   const [showEvents, setShowEvents] = useState(false);
 
   const reactionTypes: ReactionType[] = ['🔥', '💪', '😭', '🙌', '😱', '👀'];
@@ -272,6 +274,85 @@ export function CricketMatchCard({ match, onReact, userReactions }: CricketMatch
         </div>
       )}
 
+      {/* ── Prediction strip ─────────────────────────────────────────────────── */}
+      {onPredictClick && !['COMPLETED', 'ABANDONED', 'CANCELLED'].includes(match.status) && (
+        <div className="border-t border-[#1e2d45] px-3 py-2.5">
+          {prediction ? (
+            /* Already predicted — show compact summary */
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <div
+                  className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white shrink-0"
+                  style={{ backgroundColor: match.homeTeam.primaryColor }}
+                >
+                  ✓
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold text-[#00D4B4] truncate">{prediction.predictedWinner}</p>
+                  {(prediction.predictedHomeRuns !== undefined || prediction.predictedAwayRuns !== undefined) && (
+                    <p className="text-[10px] text-zinc-500 font-mono">
+                      {prediction.predictedHomeRuns ?? '?'} – {prediction.predictedAwayRuns ?? '?'} runs
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={onPredictClick}
+                className="shrink-0 px-2.5 py-1 text-[10px] font-bold text-zinc-400 border border-[#2d3d55] rounded-lg hover:text-white hover:border-zinc-500 transition-colors"
+              >
+                Edit
+              </button>
+            </div>
+          ) : (
+            /* Not yet predicted — CTA */
+            <button
+              onClick={onPredictClick}
+              className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
+              style={{ background: 'linear-gradient(90deg, #003791 0%, #FF7722 100%)' }}
+            >
+              <span>🔮</span> Predict this match
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Completed prediction result strip */}
+      {match.status === 'COMPLETED' && prediction?.scored && (
+        <div className="border-t border-[#1e2d45] px-3 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className={`text-[10px] font-bold ${(prediction.points ?? 0) >= 10 ? 'text-[#00D4B4]' : 'text-red-400'}`}>
+              {(prediction.points ?? 0) >= 10 ? '✓' : '✗'} {prediction.predictedWinner}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={`text-xs font-black ${
+              (prediction.points ?? 0) > 0 ? 'text-[#00D4B4]' :
+              (prediction.points ?? 0) < 0 ? 'text-red-400' : 'text-zinc-500'
+            }`}>
+              {(prediction.points ?? 0) > 0 ? '+' : ''}{prediction.points ?? 0} pts
+            </span>
+            <a
+              href={`/leaderboard/${match.id}`}
+              className="text-[10px] text-zinc-500 hover:text-[#00D4B4] transition-colors"
+            >
+              Rankings →
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Completed but no prediction — just rankings link */}
+      {match.status === 'COMPLETED' && !prediction && (
+        <div className="border-t border-[#1e2d45] px-3 py-2 flex items-center justify-end">
+          <a
+            href={`/leaderboard/${match.id}`}
+            className="text-[10px] font-semibold text-[#00D4B4] hover:underline flex items-center gap-1"
+          >
+            🏆 Rankings
+          </a>
+        </div>
+      )}
+
       {/* ── Reactions Row ────────────────────────────────────────────────────── */}
       <div className="border-t border-[#1e2d45] px-4 py-2.5 flex items-center justify-between">
         <div className="flex gap-1">
@@ -287,22 +368,12 @@ export function CricketMatchCard({ match, onReact, userReactions }: CricketMatch
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          {match.status === 'COMPLETED' && (
-            <a
-              href={`/leaderboard/${match.id}`}
-              className="text-[10px] font-semibold text-[#00D4B4] hover:underline flex items-center gap-1"
-            >
-              🏆 Rankings
-            </a>
-          )}
-          {isLive && (
-            <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              LIVE
-            </span>
-          )}
-        </div>
+        {isLive && (
+          <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            LIVE
+          </span>
+        )}
       </div>
     </div>
   );

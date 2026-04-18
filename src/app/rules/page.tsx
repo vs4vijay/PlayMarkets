@@ -6,6 +6,7 @@ import {
   MULTIPLIER_RULES,
   STARTING_BALANCE,
 } from '@/lib/scoring';
+import { PREDICTION_STAKE } from '@/types';
 
 export default function RulesPage() {
   return (
@@ -37,21 +38,27 @@ export default function RulesPage() {
           <p className="text-zinc-300 text-sm leading-relaxed">
             Every new player receives{' '}
             <span className="font-black text-[#FF7722]">{STARTING_BALANCE} pts</span>{' '}
-            when they join. This is your prediction capital — use it wisely.
-            Make smart predictions to grow your balance; wrong calls will cost you.
+            when they join. Each prediction costs a{' '}
+            <span className="font-black text-[#FF7722]">{PREDICTION_STAKE} pt stake</span>{' '}
+            upfront — your balance drops immediately when you commit.
+            Win the stake back plus bonuses for correct calls; lose it for wrong ones.
           </p>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+          <div className="mt-4 grid grid-cols-4 gap-3 text-center">
             <div className="rounded-xl bg-[#0e1628] border border-[#1e2d45] p-3">
               <p className="text-2xl font-black text-[#FF7722]">{STARTING_BALANCE}</p>
               <p className="text-[10px] text-zinc-500 mt-0.5">Starting pts</p>
             </div>
             <div className="rounded-xl bg-[#0e1628] border border-[#1e2d45] p-3">
-              <p className="text-2xl font-black text-[#00D4B4]">+30</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Max per prediction</p>
+              <p className="text-2xl font-black text-red-400">−{PREDICTION_STAKE}</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Stake per bet</p>
             </div>
             <div className="rounded-xl bg-[#0e1628] border border-[#1e2d45] p-3">
-              <p className="text-2xl font-black text-red-400">−5</p>
-              <p className="text-[10px] text-zinc-500 mt-0.5">Wrong call penalty</p>
+              <p className="text-2xl font-black text-[#00D4B4]">+30</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Max net win</p>
+            </div>
+            <div className="rounded-xl bg-[#0e1628] border border-[#1e2d45] p-3">
+              <p className="text-2xl font-black text-red-400">−{PREDICTION_STAKE}</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Max loss</p>
             </div>
           </div>
         </section>
