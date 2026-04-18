@@ -78,16 +78,16 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-[#070d1a]/80 backdrop-blur-md px-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md px-4">
       <div
-        className="w-full max-w-sm rounded-2xl border border-[#1e2d45] bg-[#0e1628] shadow-2xl shadow-black/60 p-8"
+        className="w-full max-w-sm rounded-2xl border border-rim bg-surface shadow-2xl shadow-black/60 p-8"
         style={{ animation: 'slideUp 0.25s ease-out' }}
       >
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <div
             className="w-14 h-14 rounded-2xl flex items-center justify-center text-3xl"
-            style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
+            style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}
           >
             🎯
           </div>
@@ -96,7 +96,7 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
         {/* Heading */}
         <h2 className="text-2xl font-black text-center text-white mb-1">
           Welcome to{' '}
-          <span className="text-[#FF7722]">Play</span>
+          <span className="text-accent">Play</span>
           <span className="text-white">Markets</span>
         </h2>
         <p className="text-sm text-zinc-400 text-center mb-2">
@@ -104,8 +104,8 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
         </p>
 
         {/* Starting balance callout */}
-        <div className="mb-6 px-4 py-2.5 rounded-xl bg-[#FF7722]/10 border border-[#FF7722]/20 text-center">
-          <p className="text-xs text-[#FF7722] font-bold">
+        <div className="mb-6 px-4 py-2.5 rounded-xl bg-accent/10 border border-accent/20 text-center">
+          <p className="text-xs text-accent font-bold">
             🎁 You&apos;ll start with {STARTING_BALANCE} pts to play with
           </p>
           <p className="text-[10px] text-zinc-400 mt-0.5">
@@ -130,7 +130,7 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
                 autoComplete="off"
                 autoCapitalize="none"
                 spellCheck={false}
-                className="w-full pl-8 pr-4 py-3 rounded-xl bg-[#1e2d45] border border-[#2d3d55] text-white placeholder-zinc-600 text-sm font-medium focus:outline-none focus:border-[#FF7722] focus:ring-1 focus:ring-[#FF7722]/40 transition-colors"
+                className="w-full pl-8 pr-4 py-3 rounded-xl bg-rim border border-rim-hi text-white placeholder-zinc-600 text-sm font-medium focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent/40 transition-colors"
               />
             </div>
             {error && (
@@ -142,7 +142,7 @@ function UsernameModal({ onSubmit }: { onSubmit: (name: string) => void }) {
             type="submit"
             disabled={value.trim().length < 2}
             className="w-full py-3 rounded-xl font-black text-sm text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
-            style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
+            style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}
           >
             Claim my {STARTING_BALANCE} pts →
           </button>

@@ -1,37 +1,79 @@
 @import "tailwindcss";
 
-:root {
-  /* PlayMarkets design tokens */
-  --background:    #070d1a;   /* deep navy */
-  --foreground:    #f1f5f9;
-  --card-bg:       #0e1628;
-  --border:        #1e2d45;
+/* ── Theme tokens ──────────────────────────────────────────────────────────── */
 
-  /* Brand */
-  --india-blue:    #003791;
-  --saffron:       #FF7722;
-  --teal:          #00D4B4;
-  --live-red:      #EF4444;
+/* Forest is the default theme — applied when no data-theme is set (SSR / first paint) */
+:root,
+[data-theme="forest"] {
+  --pm-base:     #060e08;
+  --pm-surface:  #0c1b0e;
+  --pm-rim:      #162c18;
+  --pm-rim-hi:   #1e3c22;
+  --pm-brand:    #2E7D32;
+  --pm-accent:   #76C442;
+  --pm-positive: #00BFA5;
+  --pm-fg:       #e8f5e9;
 }
 
+[data-theme="night"] {
+  --pm-base:     #070d1a;   /* deep navy */
+  --pm-surface:  #0e1628;
+  --pm-rim:      #1e2d45;
+  --pm-rim-hi:   #2d3d55;
+  --pm-brand:    #003791;   /* India Blue */
+  --pm-accent:   #FF7722;   /* Saffron */
+  --pm-positive: #00D4B4;   /* Teal */
+  --pm-fg:       #f1f5f9;
+}
+
+[data-theme="dusk"] {
+  --pm-base:     #0f0808;
+  --pm-surface:  #1a0d0d;
+  --pm-rim:      #2d1818;
+  --pm-rim-hi:   #3d2424;
+  --pm-brand:    #8B1A2E;
+  --pm-accent:   #F4A421;
+  --pm-positive: #52C27A;
+  --pm-fg:       #f5e8df;
+}
+
+[data-theme="ocean"] {
+  --pm-base:     #050d14;
+  --pm-surface:  #091828;
+  --pm-rim:      #0f2236;
+  --pm-rim-hi:   #163248;
+  --pm-brand:    #0066B3;
+  --pm-accent:   #00B8D4;
+  --pm-positive: #00E5B0;
+  --pm-fg:       #e0f4ff;
+}
+
+/* ── Tailwind color tokens ──────────────────────────────────────────────────── */
+
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground:  var(--foreground);
+  --color-background: var(--pm-base);
+  --color-foreground:  var(--pm-fg);
+  --color-surface:   var(--pm-surface);
+  --color-rim:       var(--pm-rim);
+  --color-rim-hi:    var(--pm-rim-hi);
+  --color-brand:     var(--pm-brand);
+  --color-accent:    var(--pm-accent);
+  --color-positive:  var(--pm-positive);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--pm-base);
+  color: var(--pm-fg);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
 
 /* ── Scrollbar ──────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #1e2d45; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #2d3d55; }
+::-webkit-scrollbar-thumb { background: var(--pm-rim); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pm-rim-hi); }
 
 /* ── Transitions (no-motion safe) ───────────────────────────────────────────── */
 @media (prefers-reduced-motion: no-preference) {
@@ -53,4 +95,14 @@ body {
 .score-font {
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
+}
+
+/* ── Hero gradient (adapts per theme) ──────────────────────────────────────── */
+.hero-gradient {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--pm-brand) 35%, transparent) 0%,
+    color-mix(in srgb, var(--pm-base) 80%, transparent) 60%,
+    var(--pm-base) 100%
+  );
 }

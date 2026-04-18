@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import type { CricketMatch, Prediction, MatchType } from '@/types';
+import type { CricketMatch, MatchType } from '@/types';
+import type { Prediction } from '@/types';
 import { PREDICTION_STAKE } from '@/types';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -80,8 +81,8 @@ function ScoreInput({
             onClick={() => onChange(p)}
             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
               value === p
-                ? 'bg-[#FF7722] text-white'
-                : 'bg-[#1e2d45] text-zinc-400 hover:text-white hover:bg-[#2d3d55]'
+                ? 'bg-accent text-white'
+                : 'bg-rim text-zinc-400 hover:text-white hover:bg-rim-hi'
             }`}
           >
             {p}
@@ -93,7 +94,7 @@ function ScoreInput({
       <div className="flex items-center gap-2">
         <button
           onClick={() => onChange(Math.max(0, value - step))}
-          className="w-10 h-10 rounded-xl bg-[#1e2d45] text-white font-black text-lg hover:bg-[#2d3d55] transition-colors flex items-center justify-center"
+          className="w-10 h-10 rounded-xl bg-rim text-white font-black text-lg hover:bg-rim-hi transition-colors flex items-center justify-center"
         >
           −
         </button>
@@ -106,11 +107,11 @@ function ScoreInput({
             const v = parseInt(e.target.value, 10);
             if (!isNaN(v) && v >= 0) onChange(v);
           }}
-          className="flex-1 text-center py-2.5 rounded-xl bg-[#1e2d45] text-white font-black text-xl focus:outline-none focus:ring-2 focus:ring-[#FF7722]/50 border border-transparent focus:border-[#FF7722]/40 transition-all [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+          className="flex-1 text-center py-2.5 rounded-xl bg-rim text-white font-black text-xl focus:outline-none focus:ring-2 focus:ring-accent/50 border border-transparent focus:border-accent/40 transition-all [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
         />
         <button
           onClick={() => onChange(value + step)}
-          className="w-10 h-10 rounded-xl bg-[#1e2d45] text-white font-black text-lg hover:bg-[#2d3d55] transition-colors flex items-center justify-center"
+          className="w-10 h-10 rounded-xl bg-rim text-white font-black text-lg hover:bg-rim-hi transition-colors flex items-center justify-center"
         >
           +
         </button>
@@ -154,7 +155,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
     setSubmitted(true);
     setTimeout(() => {
       onSubmit(winner, homeRuns, awayRuns);
-    }, 800); // brief "staked" flash before closing
+    }, 800);
   };
 
   // Close on Escape key
@@ -166,8 +167,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
     return () => document.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  // Net gains after the stake is returned at scoring time.
-  const maxPts    = Math.round(20 * mult);  // net if winner + both scores correct
+  const maxPts    = Math.round(20 * mult);
   const winnerPts = mult > 1 ? Math.round(10 * mult) : 10;
   const bonusPts  = mult > 1 ? Math.round(5  * mult) : 5;
 
@@ -175,22 +175,22 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
     <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-[#070d1a]/85 backdrop-blur-sm"
+        className="absolute inset-0 bg-background/85 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Panel — bottom sheet on mobile, centered card on desktop */}
+      {/* Panel */}
       <div
-        className="relative w-full max-w-md bg-[#0e1628] rounded-t-3xl sm:rounded-3xl border border-[#1e2d45] max-h-[92vh] overflow-y-auto shadow-2xl shadow-black/60"
+        className="relative w-full max-w-md bg-surface rounded-t-3xl sm:rounded-3xl border border-rim max-h-[92vh] overflow-y-auto shadow-2xl shadow-black/60"
         style={{ animation: 'modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1)' }}
       >
         {/* Drag handle (mobile) */}
         <div className="flex justify-center pt-3 pb-1 sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-[#2d3d55]" />
+          <div className="w-10 h-1 rounded-full bg-rim-hi" />
         </div>
 
         {/* ── Match header ── */}
-        <div className="px-5 pt-3 pb-5 border-b border-[#1e2d45]">
+        <div className="px-5 pt-3 pb-5 border-b border-rim">
           <div className="flex items-start justify-between mb-4">
             <div className="flex-1 min-w-0">
               <p className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider">
@@ -200,7 +200,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-[#1e2d45] text-zinc-400 hover:text-white flex items-center justify-center text-sm ml-2 shrink-0 transition-colors"
+              className="w-8 h-8 rounded-full bg-rim text-zinc-400 hover:text-white flex items-center justify-center text-sm ml-2 shrink-0 transition-colors"
             >
               ✕
             </button>
@@ -224,7 +224,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
           {/* Status badge */}
           {multLabel ? (
             <div className="mt-3.5 flex justify-center">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#00D4B4]/10 border border-[#00D4B4]/25 text-xs text-[#00D4B4] font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-positive/10 border border-positive/25 text-xs text-positive font-bold">
                 {multLabel}
               </div>
             </div>
@@ -253,7 +253,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
                   className={`py-4 px-3 rounded-2xl font-bold text-sm transition-all flex flex-col items-center gap-2 border-2 ${
                     winner === t.name
                       ? 'text-white border-transparent scale-[1.02]'
-                      : 'bg-[#1e2d45] text-zinc-400 hover:text-white border-transparent hover:border-white/10'
+                      : 'bg-rim text-zinc-400 hover:text-white border-transparent hover:border-white/10'
                   }`}
                   style={
                     winner === t.name
@@ -304,20 +304,20 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
 
           {/* Points preview */}
           {winner && (
-            <div className="rounded-2xl bg-[#070d1a] border border-[#1e2d45] p-4">
+            <div className="rounded-2xl bg-background border border-rim p-4">
               <p className="text-[10px] text-zinc-500 font-semibold uppercase tracking-wider mb-2.5">
                 Potential outcome
               </p>
               <div className="space-y-1.5 text-xs">
-                <Row label="Correct winner" value={`+${winnerPts} pts`} color="text-[#00D4B4]" />
-                <Row label={`Home score within ±${tol}`} value={`+${bonusPts} pts`} color="text-[#00D4B4]" />
-                <Row label={`Away score within ±${tol}`} value={`+${bonusPts} pts`} color="text-[#00D4B4]" />
+                <Row label="Correct winner" value={`+${winnerPts} pts`} color="text-positive" />
+                <Row label={`Home score within ±${tol}`} value={`+${bonusPts} pts`} color="text-positive" />
+                <Row label={`Away score within ±${tol}`} value={`+${bonusPts} pts`} color="text-positive" />
                 {mult > 1 && (
-                  <Row label="Early Bird multiplier" value={`×${mult}`} color="text-[#FF7722]" />
+                  <Row label="Early Bird multiplier" value={`×${mult}`} color="text-accent" />
                 )}
-                <div className="border-t border-[#1e2d45] pt-2 mt-2 flex items-center justify-between">
+                <div className="border-t border-rim pt-2 mt-2 flex items-center justify-between">
                   <span className="text-zinc-300 font-bold">Max possible</span>
-                  <span className="text-[#FF7722] font-black text-base">+{maxPts} pts</span>
+                  <span className="text-accent font-black text-base">+{maxPts} pts</span>
                 </div>
                 <div className="flex items-center justify-between text-zinc-500">
                   <span>Wrong winner (stake lost)</span>
@@ -329,15 +329,15 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
 
           {/* Stake notice — only on new predictions */}
           {!existing && !submitted && (
-            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#1e2d45]/60 border border-[#2d3d55] text-xs">
+            <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-rim/60 border border-rim-hi text-xs">
               <span className="text-zinc-400">Stake on submit</span>
-              <span className="font-black text-[#FF7722]">−{PREDICTION_STAKE} pts</span>
+              <span className="font-black text-accent">−{PREDICTION_STAKE} pts</span>
             </div>
           )}
 
           {/* Submit / Staked confirmation */}
           {submitted ? (
-            <div className="w-full py-4 rounded-2xl text-center font-black text-sm text-white bg-[#00D4B4]/20 border border-[#00D4B4]/40 text-[#00D4B4]">
+            <div className="w-full py-4 rounded-2xl text-center font-black text-sm bg-positive/20 border border-positive/40 text-positive">
               ✓ {PREDICTION_STAKE} pts staked — good luck!
             </div>
           ) : (
@@ -345,7 +345,7 @@ export function PredictionModal({ match, existing, onSubmit, onClose }: Predicti
               onClick={handleSubmit}
               disabled={!winner}
               className="w-full py-4 rounded-2xl font-black text-white text-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
+              style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}
             >
               {existing ? '✓ Update Prediction' : `Lock In · −${PREDICTION_STAKE} pts →`}
             </button>

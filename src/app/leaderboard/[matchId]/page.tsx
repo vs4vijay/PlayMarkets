@@ -35,11 +35,11 @@ export default async function MatchLeaderboardPage(
 
   if (!match) {
     return (
-      <div className="min-h-screen bg-[#070d1a] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-background text-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-5xl mb-4">😔</p>
           <p className="text-zinc-400">Match not found</p>
-          <a href="/leaderboard" className="mt-4 inline-block text-[#FF7722] hover:underline text-sm">
+          <a href="/leaderboard" className="mt-4 inline-block text-accent hover:underline text-sm">
             ← Back to Leaderboard
           </a>
         </div>
@@ -51,11 +51,11 @@ export default async function MatchLeaderboardPage(
   const winner      = match.result?.match(/^(.+?)\s+won\s+by/i)?.[1] ?? null;
 
   return (
-    <div className="min-h-screen bg-[#070d1a] text-white">
+    <div className="min-h-screen bg-background text-white">
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#003791]/30 via-[#070d1a]/80 to-[#070d1a] px-4 py-10 md:py-14">
+      <section className="relative overflow-hidden hero-gradient px-4 py-10 md:py-14">
         <div className="absolute inset-0 opacity-20 pointer-events-none">
-          <div className="absolute top-0 left-1/3 w-72 h-72 bg-[#FF7722] rounded-full blur-[120px]" />
+          <div className="absolute top-0 left-1/3 w-72 h-72 bg-accent rounded-full blur-[120px]" />
         </div>
         <div className="relative max-w-3xl mx-auto">
           <a
@@ -76,8 +76,8 @@ export default async function MatchLeaderboardPage(
 
           {/* Match result */}
           {isCompleted && match.result && (
-            <div className="mt-4 px-4 py-2.5 rounded-xl bg-[#00D4B4]/10 border border-[#00D4B4]/20 inline-flex items-center gap-2">
-              <span className="text-[#00D4B4] font-bold text-sm">{match.result}</span>
+            <div className="mt-4 px-4 py-2.5 rounded-xl bg-positive/10 border border-positive/20 inline-flex items-center gap-2">
+              <span className="text-positive font-bold text-sm">{match.result}</span>
             </div>
           )}
 
@@ -116,12 +116,12 @@ export default async function MatchLeaderboardPage(
                 label="Correct Winner"
                 value={entries.filter((e) => e.isCorrectWinner).length}
                 sub={`of ${entries.length}`}
-                color="text-[#00D4B4]"
+                color="text-positive"
               />
               <StatCard
                 label="Top Score"
                 value={entries[0]?.points !== undefined ? `+${Math.max(0, entries[0].points)}` : '—'}
-                color="text-[#FF7722]"
+                color="text-accent"
               />
             </>
           ) : (
@@ -138,15 +138,15 @@ export default async function MatchLeaderboardPage(
             <p className="text-zinc-400 font-semibold">No predictions for this match yet</p>
             <a
               href="/"
-              className="inline-block mt-4 px-5 py-2 bg-[#FF7722] text-white font-bold rounded-xl text-sm hover:bg-[#ff8c3a] transition-colors"
+              className="inline-block mt-4 px-5 py-2 bg-accent text-white font-bold rounded-xl text-sm hover:opacity-90 transition-opacity"
             >
               Make a Prediction
             </a>
           </div>
         ) : (
-          <div className="rounded-2xl border border-[#1e2d45] overflow-hidden">
+          <div className="rounded-2xl border border-rim overflow-hidden">
             {/* Table header */}
-            <div className={`grid gap-x-3 px-4 py-2.5 bg-[#0e1628] border-b border-[#1e2d45] text-[10px] font-semibold text-zinc-500 uppercase tracking-wider ${
+            <div className={`grid gap-x-3 px-4 py-2.5 bg-surface border-b border-rim text-[10px] font-semibold text-zinc-500 uppercase tracking-wider ${
               isCompleted
                 ? 'grid-cols-[2rem_1fr_5rem_5rem_5rem_4rem]'
                 : 'grid-cols-[2rem_1fr_5rem_5rem_5rem]'
@@ -212,7 +212,7 @@ function TeamScore({
           </p>
         )}
       </div>
-      {isWinner && <span className="text-[#00D4B4] text-xs font-bold">✓ Won</span>}
+      {isWinner && <span className="text-positive text-xs font-bold">✓ Won</span>}
     </div>
   );
 }
@@ -223,7 +223,7 @@ function StatCard({
   label: string; value: number | string; sub?: string; color?: string;
 }) {
   return (
-    <div className="rounded-xl bg-[#0e1628] border border-[#1e2d45] p-3 text-center">
+    <div className="rounded-xl bg-surface border border-rim p-3 text-center">
       <p className={`text-xl font-black ${color}`}>{value}</p>
       {sub && <p className="text-[10px] text-zinc-500">{sub}</p>}
       <p className="text-[10px] text-zinc-500 mt-0.5">{label}</p>
@@ -242,7 +242,7 @@ function MatchRow({
   const pts = entry.points;
   const ptsColor =
     pts === undefined ? 'text-zinc-500'
-    : pts > 0  ? 'text-[#00D4B4]'
+    : pts > 0  ? 'text-positive'
     : pts < 0  ? 'text-red-400'
     : 'text-zinc-500';
 
@@ -252,7 +252,7 @@ function MatchRow({
         isCompleted
           ? 'grid-cols-[2rem_1fr_5rem_5rem_5rem_4rem]'
           : 'grid-cols-[2rem_1fr_5rem_5rem_5rem]'
-      } ${striped ? 'bg-[#0e1628]/50' : ''}`}
+      } ${striped ? 'bg-surface/50' : ''}`}
     >
       <span className="text-zinc-500 font-mono text-xs">{entry.rank}</span>
 
@@ -260,7 +260,7 @@ function MatchRow({
       <div className="flex items-center gap-2 min-w-0">
         <div
           className="w-6 h-6 rounded-md flex-shrink-0 flex items-center justify-center font-black text-white text-[10px]"
-          style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
+          style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}
         >
           {entry.userName.slice(0, 1).toUpperCase()}
         </div>
@@ -285,7 +285,7 @@ function MatchRow({
           !isCompleted
             ? 'text-zinc-400'
             : entry.isCorrectWinner
-            ? 'text-[#00D4B4]'
+            ? 'text-positive'
             : 'text-red-400'
         }`}
       >

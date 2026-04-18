@@ -19,9 +19,8 @@ export function LogoIcon({ size = 36, className = '' }: { size?: number; classNa
     >
       <defs>
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#003791"/>
-          <stop offset="60%"  stopColor="#1a4fab"/>
-          <stop offset="100%" stopColor="#FF7722"/>
+          <stop offset="0%"   stopColor="var(--pm-brand)"/>
+          <stop offset="100%" stopColor="var(--pm-accent)"/>
         </linearGradient>
       </defs>
 
@@ -66,7 +65,7 @@ export function Logo({ iconSize = 36, showTagline = true }: { iconSize?: number;
       <LogoIcon size={iconSize} className="shrink-0 rounded-xl overflow-hidden" />
       <div>
         <span className="font-black text-lg tracking-tight leading-none">
-          <span className="text-[#FF7722]">Play</span>
+          <span className="text-accent">Play</span>
           <span className="text-white">Markets</span>
         </span>
         {showTagline && (

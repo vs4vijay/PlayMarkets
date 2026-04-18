@@ -47,7 +47,7 @@ function getStatusBadge(status: string): { label: string; cls: string } {
 
 function getMatchTypeBadge(type: string): string {
   const map: Record<string, string> = {
-    T20: 'bg-[#FF7722]/20 text-[#FF7722] border border-[#FF7722]/30',
+    T20: 'bg-accent/20 text-accent border border-accent/30',
     ODI: 'bg-blue-500/20 text-blue-400 border border-blue-500/30',
     TEST: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
     T10: 'bg-pink-500/20 text-pink-400 border border-pink-500/30',
@@ -137,15 +137,15 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
     <div
       className={`
         rounded-2xl overflow-hidden border transition-all duration-200
-        bg-[#0e1628] border-[#1e2d45]
-        hover:border-[#003791]/60 hover:shadow-lg hover:shadow-[#003791]/10
+        bg-surface border-rim
+        hover:border-brand/60 hover:shadow-lg hover:shadow-brand/10
         ${isLive ? 'border-red-600/40 shadow-sm shadow-red-600/10' : ''}
       `}
     >
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <a
         href={`/match/${match.id}`}
-        className="px-4 py-2.5 flex items-center justify-between bg-white/[0.03] border-b border-[#1e2d45] hover:bg-white/[0.06] transition-colors"
+        className="px-4 py-2.5 flex items-center justify-between bg-white/[0.03] border-b border-rim hover:bg-white/[0.06] transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${getMatchTypeBadge(match.matchType)}`}>
@@ -172,14 +172,14 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
             {match.status === 'UPCOMING' ? (
               <>
                 <span className="text-2xl font-black text-zinc-500">VS</span>
-                <span className="text-xs text-[#00D4B4] font-medium">
+                <span className="text-xs text-positive font-medium">
                   {formatMatchTime(match.startTime, match.status)}
                 </span>
               </>
             ) : hasScore ? (
               <div className="text-center space-y-0.5">
                 {match.result && (
-                  <p className="text-[11px] font-semibold text-[#00D4B4] text-center leading-tight">
+                  <p className="text-[11px] font-semibold text-positive text-center leading-tight">
                     {match.result}
                   </p>
                 )}
@@ -220,7 +220,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
       </div>
 
       {/* ── Venue + Time ────────────────────────────────────────────────────── */}
-      <div className="px-4 pb-2 flex items-center justify-between text-[10px] text-zinc-500 border-t border-[#1e2d45]">
+      <div className="px-4 pb-2 flex items-center justify-between text-[10px] text-zinc-500 border-t border-rim">
         <span className="truncate flex-1">{match.venue}</span>
         <span className="shrink-0 ml-2">
           {match.startTime.toLocaleDateString('en-IN', {
@@ -236,7 +236,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
 
       {/* ── Match Events ────────────────────────────────────────────────────── */}
       {match.events.length > 0 && (
-        <div className="border-t border-[#1e2d45]">
+        <div className="border-t border-rim">
           <button
             onClick={() => setShowEvents(!showEvents)}
             className="w-full px-4 py-2 text-[11px] font-medium text-zinc-400 hover:bg-white/[0.03] flex items-center justify-between"
@@ -281,7 +281,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
 
       {/* ── Prediction strip ─────────────────────────────────────────────────── */}
       {showPredictCta && !['COMPLETED', 'ABANDONED', 'CANCELLED'].includes(match.status) && (
-        <div className="border-t border-[#1e2d45] px-3 py-2.5">
+        <div className="border-t border-rim px-3 py-2.5">
           {prediction ? (
             /* Already predicted — show compact summary + edit link */
             <div className="flex items-center justify-between gap-2">
@@ -293,7 +293,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
                   ✓
                 </div>
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-[#00D4B4] truncate">{prediction.predictedWinner}</p>
+                  <p className="text-[11px] font-bold text-positive truncate">{prediction.predictedWinner}</p>
                   {(prediction.predictedHomeRuns !== undefined || prediction.predictedAwayRuns !== undefined) && (
                     <p className="text-[10px] text-zinc-500 font-mono">
                       {prediction.predictedHomeRuns ?? '?'} – {prediction.predictedAwayRuns ?? '?'} runs
@@ -303,7 +303,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
               </div>
               <a
                 href={`/match/${match.id}`}
-                className="shrink-0 px-2.5 py-1 text-[10px] font-bold text-zinc-400 border border-[#2d3d55] rounded-lg hover:text-white hover:border-zinc-500 transition-colors"
+                className="shrink-0 px-2.5 py-1 text-[10px] font-bold text-zinc-400 border border-rim-hi rounded-lg hover:text-white hover:border-zinc-500 transition-colors"
               >
                 Edit
               </a>
@@ -313,7 +313,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
             <a
               href={`/match/${match.id}`}
               className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-              style={{ background: 'linear-gradient(90deg, #003791 0%, #FF7722 100%)' }}
+              style={{ background: 'linear-gradient(90deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}
             >
               <span>🔮</span> Predict this match
             </a>
@@ -323,22 +323,22 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
 
       {/* Completed prediction result strip */}
       {match.status === 'COMPLETED' && prediction?.scored && (
-        <div className="border-t border-[#1e2d45] px-3 py-2 flex items-center justify-between">
+        <div className="border-t border-rim px-3 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-bold ${(prediction.points ?? 0) >= 10 ? 'text-[#00D4B4]' : 'text-red-400'}`}>
+            <span className={`text-[10px] font-bold ${(prediction.points ?? 0) >= 10 ? 'text-positive' : 'text-red-400'}`}>
               {(prediction.points ?? 0) >= 10 ? '✓' : '✗'} {prediction.predictedWinner}
             </span>
           </div>
           <div className="flex items-center gap-2">
             <span className={`text-xs font-black ${
-              (prediction.points ?? 0) > 0 ? 'text-[#00D4B4]' :
+              (prediction.points ?? 0) > 0 ? 'text-positive' :
               (prediction.points ?? 0) < 0 ? 'text-red-400' : 'text-zinc-500'
             }`}>
               {(prediction.points ?? 0) > 0 ? '+' : ''}{prediction.points ?? 0} pts
             </span>
             <a
               href={`/match/${match.id}`}
-              className="text-[10px] text-zinc-500 hover:text-[#00D4B4] transition-colors"
+              className="text-[10px] text-zinc-500 hover:text-positive transition-colors"
             >
               View →
             </a>
@@ -348,10 +348,10 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
 
       {/* Completed but no prediction — just view link */}
       {match.status === 'COMPLETED' && !prediction && (
-        <div className="border-t border-[#1e2d45] px-3 py-2 flex items-center justify-end">
+        <div className="border-t border-rim px-3 py-2 flex items-center justify-end">
           <a
             href={`/match/${match.id}`}
-            className="text-[10px] font-semibold text-[#00D4B4] hover:underline flex items-center gap-1"
+            className="text-[10px] font-semibold text-positive hover:underline flex items-center gap-1"
           >
             View Match →
           </a>
@@ -359,7 +359,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
       )}
 
       {/* ── Reactions Row ────────────────────────────────────────────────────── */}
-      <div className="border-t border-[#1e2d45] px-4 py-2.5 flex items-center justify-between">
+      <div className="border-t border-rim px-4 py-2.5 flex items-center justify-between">
         <div className="flex gap-1">
           {reactionTypes.map((r) => (
             <button

@@ -68,7 +68,7 @@ function ScoreInput({
         {presets.map(p => (
           <button key={p} onClick={() => onChange(p)}
             className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-              value === p ? 'bg-[#FF7722] text-white' : 'bg-[#1e2d45] text-zinc-400 hover:text-white'
+              value === p ? 'bg-accent text-white' : 'bg-rim text-zinc-400 hover:text-white'
             }`}>
             {p}
           </button>
@@ -76,14 +76,14 @@ function ScoreInput({
       </div>
       <div className="flex items-center gap-2">
         <button onClick={() => onChange(Math.max(0, value - step))}
-          className="w-10 h-10 rounded-xl bg-[#1e2d45] text-white font-black text-lg hover:bg-[#2d3d55] transition-colors flex items-center justify-center">
+          className="w-10 h-10 rounded-xl bg-rim text-white font-black text-lg hover:bg-rim-hi transition-colors flex items-center justify-center">
           −
         </button>
         <input type="number" value={value} min={0} max={600}
           onChange={e => { const v = parseInt(e.target.value, 10); if (!isNaN(v) && v >= 0) onChange(v); }}
-          className="flex-1 text-center py-2.5 rounded-xl bg-[#1e2d45] text-white font-black text-xl focus:outline-none focus:ring-2 focus:ring-[#FF7722]/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
+          className="flex-1 text-center py-2.5 rounded-xl bg-rim text-white font-black text-xl focus:outline-none focus:ring-2 focus:ring-accent/50 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
         <button onClick={() => onChange(value + step)}
-          className="w-10 h-10 rounded-xl bg-[#1e2d45] text-white font-black text-lg hover:bg-[#2d3d55] transition-colors flex items-center justify-center">
+          className="w-10 h-10 rounded-xl bg-rim text-white font-black text-lg hover:bg-rim-hi transition-colors flex items-center justify-center">
           +
         </button>
       </div>
@@ -157,12 +157,12 @@ function PredictionForm({
     const pts = prediction.points ?? 0;
     return (
       <div className="space-y-4">
-        <div className="rounded-2xl border border-[#1e2d45] bg-[#0e1628] p-5">
+        <div className="rounded-2xl border border-rim bg-surface p-5">
           <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-4">Your Prediction</p>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm text-zinc-400">Your pick</span>
-              <span className={`font-black text-sm ${correct ? 'text-[#00D4B4]' : 'text-red-400'}`}>
+              <span className={`font-black text-sm ${correct ? 'text-positive' : 'text-red-400'}`}>
                 {prediction.predictedWinner} {correct ? '✓' : '✗'}
               </span>
             </div>
@@ -178,16 +178,16 @@ function PredictionForm({
                 {match.homeScore?.runs ?? '—'} – {match.awayScore?.runs ?? '—'}
               </span>
             </div>
-            <div className="flex items-center justify-between border-t border-[#1e2d45] pt-3 mt-1">
+            <div className="flex items-center justify-between border-t border-rim pt-3 mt-1">
               <span className="text-sm font-bold text-white">Points earned</span>
-              <span className={`font-black text-xl ${pts > 0 ? 'text-[#00D4B4]' : pts < 0 ? 'text-red-400' : 'text-zinc-500'}`}>
+              <span className={`font-black text-xl ${pts > 0 ? 'text-positive' : pts < 0 ? 'text-red-400' : 'text-zinc-500'}`}>
                 {pts > 0 ? '+' : ''}{pts} pts
               </span>
             </div>
           </div>
         </div>
         <a href={`/leaderboard/${match.id}`}
-          className="block w-full text-center py-3 rounded-2xl border border-[#1e2d45] text-zinc-400 hover:text-white hover:bg-[#1e2d45] text-sm font-bold transition-colors">
+          className="block w-full text-center py-3 rounded-2xl border border-rim text-zinc-400 hover:text-white hover:bg-rim text-sm font-bold transition-colors">
           🏆 View Match Rankings
         </a>
       </div>
@@ -197,10 +197,10 @@ function PredictionForm({
   // ── Completed but no prediction ───────────────────────────────────────────
   if (isCompleted && !prediction) {
     return (
-      <div className="rounded-2xl border border-[#1e2d45] bg-[#0e1628] p-5 text-center space-y-3">
+      <div className="rounded-2xl border border-rim bg-surface p-5 text-center space-y-3">
         <p className="text-zinc-500 text-sm">No prediction was made for this match.</p>
         <a href={`/leaderboard/${match.id}`}
-          className="block w-full py-3 rounded-2xl border border-[#1e2d45] text-zinc-400 hover:text-white hover:bg-[#1e2d45] text-sm font-bold transition-colors">
+          className="block w-full py-3 rounded-2xl border border-rim text-zinc-400 hover:text-white hover:bg-rim text-sm font-bold transition-colors">
           🏆 View Match Rankings
         </a>
       </div>
@@ -210,14 +210,14 @@ function PredictionForm({
   // ── Locked summary (after submitting, not yet scored) ─────────────────────
   if (!isPredictable || (!editing && prediction)) {
     return (
-      <div className="rounded-2xl border border-[#1e2d45] bg-[#0e1628] p-5 space-y-3">
+      <div className="rounded-2xl border border-rim bg-surface p-5 space-y-3">
         {prediction && (
           <>
             <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Your Prediction</p>
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Pick</span>
-                <span className="font-black text-[#FF7722]">{prediction.predictedWinner}</span>
+                <span className="font-black text-accent">{prediction.predictedWinner}</span>
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Predicted scores</span>
@@ -227,12 +227,12 @@ function PredictionForm({
               </div>
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-400">Staked</span>
-                <span className="text-[#FF7722] font-bold">{prediction.stake ?? PREDICTION_STAKE} pts</span>
+                <span className="text-accent font-bold">{prediction.stake ?? PREDICTION_STAKE} pts</span>
               </div>
             </div>
             {isPredictable && (
               <button onClick={() => setEditing(true)}
-                className="w-full py-2.5 rounded-xl border border-[#1e2d45] text-zinc-400 hover:text-white hover:bg-[#1e2d45] text-sm font-bold transition-colors">
+                className="w-full py-2.5 rounded-xl border border-rim text-zinc-400 hover:text-white hover:bg-rim text-sm font-bold transition-colors">
                 Edit Prediction
               </button>
             )}
@@ -250,7 +250,7 @@ function PredictionForm({
     <div className="space-y-5">
       {/* Early bird / live badge */}
       {multLabel ? (
-        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-[#00D4B4]/10 border border-[#00D4B4]/25 text-xs text-[#00D4B4] font-bold">
+        <div className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-positive/10 border border-positive/25 text-xs text-positive font-bold">
           ⚡ {multLabel}
         </div>
       ) : isLiveStatus(match.status) ? (
@@ -268,7 +268,7 @@ function PredictionForm({
               className={`py-5 px-3 rounded-2xl font-bold transition-all flex flex-col items-center gap-2 border-2 ${
                 winner === t.name
                   ? 'text-white border-white/20 scale-[1.02]'
-                  : 'bg-[#0e1628] text-zinc-400 hover:text-white border-[#1e2d45] hover:border-[#2d3d55]'
+                  : 'bg-surface text-zinc-400 hover:text-white border-rim hover:border-rim-hi'
               }`}
               style={winner === t.name ? { backgroundColor: t.primaryColor } : {}}>
               <div className="w-12 h-12 rounded-full flex items-center justify-center font-black text-white text-sm"
@@ -296,22 +296,22 @@ function PredictionForm({
 
       {/* Points preview */}
       {winner && (
-        <div className="rounded-2xl bg-[#070d1a] border border-[#1e2d45] p-4 space-y-2">
+        <div className="rounded-2xl bg-background border border-rim p-4 space-y-2">
           <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Potential outcome</p>
           {[
-            { label: 'Correct winner', val: `+${winnerPts} pts`, c: 'text-[#00D4B4]' },
-            { label: `Home score ±${tol}`, val: `+${bonusPts} pts`, c: 'text-[#00D4B4]' },
-            { label: `Away score ±${tol}`, val: `+${bonusPts} pts`, c: 'text-[#00D4B4]' },
-            ...(mult > 1 ? [{ label: 'Early Bird multiplier', val: `×${mult}`, c: 'text-[#FF7722]' }] : []),
+            { label: 'Correct winner', val: `+${winnerPts} pts`, c: 'text-positive' },
+            { label: `Home score ±${tol}`, val: `+${bonusPts} pts`, c: 'text-positive' },
+            { label: `Away score ±${tol}`, val: `+${bonusPts} pts`, c: 'text-positive' },
+            ...(mult > 1 ? [{ label: 'Early Bird multiplier', val: `×${mult}`, c: 'text-accent' }] : []),
           ].map(r => (
             <div key={r.label} className="flex items-center justify-between text-xs">
               <span className="text-zinc-400">{r.label}</span>
               <span className={`font-bold ${r.c}`}>{r.val}</span>
             </div>
           ))}
-          <div className="flex items-center justify-between pt-2 border-t border-[#1e2d45]">
+          <div className="flex items-center justify-between pt-2 border-t border-rim">
             <span className="text-sm font-bold text-white">Max possible</span>
-            <span className="text-[#FF7722] font-black text-lg">+{maxPts} pts</span>
+            <span className="text-accent font-black text-lg">+{maxPts} pts</span>
           </div>
           <div className="flex items-center justify-between text-xs text-zinc-500">
             <span>Wrong winner (stake lost)</span>
@@ -324,15 +324,15 @@ function PredictionForm({
 
       {/* Stake notice (new predictions only) */}
       {!prediction && (
-        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-[#1e2d45]/50 border border-[#2d3d55] text-xs">
+        <div className="flex items-center justify-between px-4 py-2.5 rounded-xl bg-rim/50 border border-rim-hi text-xs">
           <span className="text-zinc-400">Stake on submit</span>
-          <span className="font-black text-[#FF7722]">−{PREDICTION_STAKE} pts</span>
+          <span className="font-black text-accent">−{PREDICTION_STAKE} pts</span>
         </div>
       )}
 
       <button onClick={handleSubmit} disabled={!winner || saving}
         className="w-full py-4 rounded-2xl font-black text-white text-sm transition-all disabled:opacity-30 hover:opacity-90 active:scale-[0.98]"
-        style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}>
+        style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}>
         {saving ? 'Saving…' : prediction ? '✓ Update Prediction' : `Lock In · −${PREDICTION_STAKE} pts →`}
       </button>
 
@@ -353,7 +353,7 @@ function MatchHero({ match }: { match: CricketMatch }) {
   const winner = match.result ? extractWinner(match.result) : null;
 
   return (
-    <div className="relative overflow-hidden bg-gradient-to-b from-[#003791]/30 to-[#070d1a] px-4 pt-6 pb-8">
+    <div className="relative overflow-hidden hero-gradient px-4 pt-6 pb-8">
       {/* Background blobs */}
       <div className="absolute inset-0 pointer-events-none opacity-20">
         <div className="absolute top-0 left-1/3 w-64 h-64 rounded-full blur-[100px]"
@@ -405,8 +405,8 @@ function MatchHero({ match }: { match: CricketMatch }) {
 
         {/* Result / Status note */}
         {match.result && (
-          <div className="text-center px-4 py-2.5 rounded-xl bg-[#00D4B4]/10 border border-[#00D4B4]/20">
-            <p className="text-[#00D4B4] font-bold text-sm">{match.result}</p>
+          <div className="text-center px-4 py-2.5 rounded-xl bg-positive/10 border border-positive/20">
+            <p className="text-positive font-bold text-sm">{match.result}</p>
           </div>
         )}
         {!match.result && match.statusNote && (
@@ -446,7 +446,7 @@ function TeamHero({
           <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-[9px]">🏏</span>
         )}
         {isWinner && (
-          <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-[#00D4B4] rounded-full flex items-center justify-center text-[9px] font-black text-[#070d1a]">✓</span>
+          <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-positive rounded-full flex items-center justify-center text-[9px] font-black text-background">✓</span>
         )}
       </div>
       <p className={`mt-2 font-black text-white text-lg leading-tight ${isRight ? 'text-right' : ''}`}>
@@ -477,7 +477,6 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
   const userId   = user?.id   ?? '';
   const userName = user?.name ?? 'Fan';
 
-  // Load match + user prediction
   const loadData = useCallback(async () => {
     try {
       const [m, preds] = await Promise.all([
@@ -496,7 +495,6 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Poll every 30s when live
   useEffect(() => {
     if (!match || !isLiveStatus(match.status)) return;
     const id = setInterval(async () => {
@@ -517,7 +515,7 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
   const hasEvents = match.events.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#070d1a] text-white">
+    <div className="min-h-screen bg-background text-white">
       <MatchHero match={match} />
 
       <div className="max-w-5xl mx-auto px-4 py-6">
@@ -533,9 +531,9 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
                   <span>⚡</span> Key Moments
                   <span className="text-xs font-normal text-zinc-500">({match.events.length})</span>
                 </h2>
-                <div className="rounded-2xl border border-[#1e2d45] overflow-hidden divide-y divide-[#1e2d45]">
+                <div className="rounded-2xl border border-rim overflow-hidden divide-y divide-rim">
                   {match.events.map((ev, i) => (
-                    <div key={ev.id} className={`flex items-start gap-3 px-4 py-3 ${i % 2 === 1 ? 'bg-[#0e1628]/40' : ''}`}>
+                    <div key={ev.id} className={`flex items-start gap-3 px-4 py-3 ${i % 2 === 1 ? 'bg-surface/40' : ''}`}>
                       <span className="text-xl shrink-0 mt-0.5">{EVENT_ICON[ev.type] ?? '📌'}</span>
                       <div className="flex-1 min-w-0">
                         {ev.over !== undefined && (
@@ -555,7 +553,7 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
 
           {/* ── Right column: Prediction Form ────────────────────────────── */}
           <div className="lg:sticky lg:top-24">
-            <div className="rounded-2xl border border-[#1e2d45] bg-[#0e1628] p-5">
+            <div className="rounded-2xl border border-rim bg-surface p-5">
               <h2 className="text-sm font-black text-white mb-4 flex items-center gap-2">
                 <span>🔮</span>
                 {match.status === 'COMPLETED'
@@ -569,7 +567,7 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
                 <div className="text-center py-6 space-y-3">
                   <p className="text-zinc-500 text-sm">Sign in to make a prediction</p>
                   <a href="/"
-                    className="inline-block px-4 py-2 bg-[#FF7722] text-white rounded-xl text-xs font-bold hover:bg-[#ff8c3a] transition-colors">
+                    className="inline-block px-4 py-2 bg-accent text-white rounded-xl text-xs font-bold hover:opacity-90 transition-opacity">
                     Join to Play
                   </a>
                 </div>
@@ -624,12 +622,12 @@ function MatchLeaderboardSection({
           <span>🏆</span> Match Predictions
           <span className="text-xs font-normal text-zinc-500">({entries.length})</span>
         </h2>
-        <a href={`/leaderboard/${matchId}`} className="text-[10px] text-[#00D4B4] hover:underline">
+        <a href={`/leaderboard/${matchId}`} className="text-[10px] text-positive hover:underline">
           Full rankings →
         </a>
       </div>
-      <div className="rounded-2xl border border-[#1e2d45] overflow-hidden">
-        <div className={`grid gap-x-3 px-4 py-2.5 bg-[#0e1628] border-b border-[#1e2d45] text-[10px] font-semibold text-zinc-500 uppercase tracking-wider ${
+      <div className="rounded-2xl border border-rim overflow-hidden">
+        <div className={`grid gap-x-3 px-4 py-2.5 bg-surface border-b border-rim text-[10px] font-semibold text-zinc-500 uppercase tracking-wider ${
           isCompleted ? 'grid-cols-[2rem_1fr_4rem_4rem_3.5rem]' : 'grid-cols-[2rem_1fr_4rem_4rem]'
         }`}>
           <span>#</span><span>Player</span>
@@ -639,24 +637,24 @@ function MatchLeaderboardSection({
         </div>
         {entries.slice(0, 8).map((e, i) => {
           const isMe = e.userId === currentUserId;
-          const ptsColor = e.points === undefined ? '' : e.points > 0 ? 'text-[#00D4B4]' : e.points < 0 ? 'text-red-400' : 'text-zinc-500';
+          const ptsColor = e.points === undefined ? '' : e.points > 0 ? 'text-positive' : e.points < 0 ? 'text-red-400' : 'text-zinc-500';
           return (
             <div key={e.userId}
               className={`grid gap-x-3 px-4 py-2.5 items-center text-xs ${
                 isCompleted ? 'grid-cols-[2rem_1fr_4rem_4rem_3.5rem]' : 'grid-cols-[2rem_1fr_4rem_4rem]'
-              } ${isMe ? 'bg-[#FF7722]/5 border-l-2 border-[#FF7722]' : i % 2 === 1 ? 'bg-[#0e1628]/50' : ''}`}>
+              } ${isMe ? 'bg-accent/5 border-l-2 border-accent' : i % 2 === 1 ? 'bg-surface/50' : ''}`}>
               <span className="text-zinc-500 font-mono">{e.rank}</span>
               <div className="flex items-center gap-1.5 min-w-0">
                 <div className="w-5 h-5 rounded-md flex-shrink-0 flex items-center justify-center font-black text-white text-[9px]"
-                  style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}>
+                  style={{ background: 'linear-gradient(135deg, var(--pm-brand) 0%, var(--pm-accent) 100%)' }}>
                   {e.userName.slice(0, 1).toUpperCase()}
                 </div>
-                <span className={`truncate font-semibold ${isMe ? 'text-[#FF7722]' : 'text-white'}`}>
+                <span className={`truncate font-semibold ${isMe ? 'text-accent' : 'text-white'}`}>
                   {e.userName}{isMe ? ' (you)' : ''}
                 </span>
               </div>
               <span className={`text-right font-bold truncate text-[10px] ${
-                isCompleted ? (e.isCorrectWinner ? 'text-[#00D4B4]' : 'text-red-400') : 'text-zinc-400'
+                isCompleted ? (e.isCorrectWinner ? 'text-positive' : 'text-red-400') : 'text-zinc-400'
               }`}>
                 {e.predictedWinner}
               </span>
@@ -680,9 +678,9 @@ function MatchLeaderboardSection({
 
 function LoadingState() {
   return (
-    <div className="min-h-screen bg-[#070d1a] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-3">
-        <div className="w-12 h-12 rounded-full border-2 border-[#FF7722] border-t-transparent animate-spin mx-auto" />
+        <div className="w-12 h-12 rounded-full border-2 border-accent border-t-transparent animate-spin mx-auto" />
         <p className="text-zinc-500 text-sm">Loading match…</p>
       </div>
     </div>
@@ -691,11 +689,11 @@ function LoadingState() {
 
 function ErrorState({ message }: { message: string }) {
   return (
-    <div className="min-h-screen bg-[#070d1a] flex items-center justify-center">
+    <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-4">
         <p className="text-5xl">😔</p>
         <p className="text-zinc-400">{message}</p>
-        <a href="/" className="inline-block px-5 py-2.5 bg-[#FF7722] text-white rounded-xl text-sm font-bold hover:bg-[#ff8c3a] transition-colors">
+        <a href="/" className="inline-block px-5 py-2.5 bg-accent text-white rounded-xl text-sm font-bold hover:opacity-90 transition-opacity">
           ← Back to Matches
         </a>
       </div>

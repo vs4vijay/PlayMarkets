@@ -32,13 +32,13 @@ export function MyPredictionsPanel({
       {/* FAB */}
       <button
         onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 flex items-center gap-2 px-4 h-12 rounded-full shadow-lg text-white font-bold text-sm hover:scale-105 transition-transform z-50 bg-[#0e1628] border border-[#1e2d45] hover:border-[#FF7722]/50"
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-4 h-12 rounded-full shadow-lg text-white font-bold text-sm hover:scale-105 transition-transform z-50 bg-surface border border-rim hover:border-accent/50"
         title="My Predictions"
       >
         <span className="text-base">🔮</span>
         <span className="text-white font-black">{total}</span>
         {totalPoints !== 0 && (
-          <span className={`text-xs font-black ${totalPoints > 0 ? 'text-[#00D4B4]' : 'text-red-400'}`}>
+          <span className={`text-xs font-black ${totalPoints > 0 ? 'text-positive' : 'text-red-400'}`}>
             {totalPoints > 0 ? `+${totalPoints}` : totalPoints} pts
           </span>
         )}
@@ -46,15 +46,15 @@ export function MyPredictionsPanel({
 
       {/* Panel */}
       {open && (
-        <div className="fixed bottom-24 right-6 w-80 max-h-[70vh] bg-[#070d1a] rounded-2xl shadow-2xl border border-[#1e2d45] overflow-hidden z-50 flex flex-col">
+        <div className="fixed bottom-24 right-6 w-80 max-h-[70vh] bg-background rounded-2xl shadow-2xl border border-rim overflow-hidden z-50 flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-[#1e2d45] flex items-center justify-between shrink-0">
+          <div className="p-4 border-b border-rim flex items-center justify-between shrink-0">
             <div>
               <h3 className="font-black text-white text-sm">My Predictions</h3>
               <p className="text-[10px] text-zinc-500 mt-0.5">
                 {upcoming.length} upcoming · {completed.length} scored
                 {totalPoints !== 0 && (
-                  <span className={`ml-1 font-bold ${totalPoints > 0 ? 'text-[#00D4B4]' : 'text-red-400'}`}>
+                  <span className={`ml-1 font-bold ${totalPoints > 0 ? 'text-positive' : 'text-red-400'}`}>
                     · {totalPoints > 0 ? '+' : ''}{totalPoints} pts
                   </span>
                 )}
@@ -62,7 +62,7 @@ export function MyPredictionsPanel({
             </div>
             <button
               onClick={() => setOpen(false)}
-              className="w-7 h-7 rounded-full bg-[#1e2d45] text-zinc-400 hover:text-white flex items-center justify-center text-sm transition-colors"
+              className="w-7 h-7 rounded-full bg-rim text-zinc-400 hover:text-white flex items-center justify-center text-sm transition-colors"
             >
               ✕
             </button>
@@ -79,14 +79,14 @@ export function MyPredictionsPanel({
                 const pts = pred.points;
                 const ptsColor =
                   pts === undefined || !pred.scored ? 'text-zinc-500'
-                  : pts > 0 ? 'text-[#00D4B4]'
+                  : pts > 0 ? 'text-positive'
                   : pts < 0 ? 'text-red-400'
                   : 'text-zinc-500';
 
                 return (
                   <div
                     key={match.id}
-                    className="bg-[#0e1628] rounded-xl p-3 border border-[#1e2d45]"
+                    className="bg-surface rounded-xl p-3 border border-rim"
                   >
                     {/* Teams */}
                     <div className="flex items-center justify-between mb-2">
@@ -115,7 +115,7 @@ export function MyPredictionsPanel({
                     <div className="flex items-center justify-between text-xs">
                       <div className="space-y-0.5">
                         <p className="text-zinc-400">
-                          Pick: <span className="text-[#FF7722] font-bold">{pred.predictedWinner}</span>
+                          Pick: <span className="text-accent font-bold">{pred.predictedWinner}</span>
                         </p>
                         {pred.predictedHomeRuns !== undefined && (
                           <p className="text-zinc-600 font-mono text-[10px]">
@@ -123,7 +123,7 @@ export function MyPredictionsPanel({
                           </p>
                         )}
                         {match.result && (
-                          <p className="text-[#00D4B4] text-[10px]">{match.result}</p>
+                          <p className="text-positive text-[10px]">{match.result}</p>
                         )}
                       </div>
 
@@ -137,7 +137,7 @@ export function MyPredictionsPanel({
                           <a
                             href={`/match/${match.id}`}
                             onClick={() => setOpen(false)}
-                            className="text-[10px] text-zinc-500 hover:text-white border border-[#2d3d55] hover:border-zinc-500 px-2 py-0.5 rounded-md transition-colors"
+                            className="text-[10px] text-zinc-500 hover:text-white border border-rim-hi hover:border-zinc-500 px-2 py-0.5 rounded-md transition-colors"
                           >
                             Edit
                           </a>
@@ -145,7 +145,7 @@ export function MyPredictionsPanel({
                         {!isUpcoming && (
                           <a
                             href={`/match/${match.id}`}
-                            className="text-[10px] text-zinc-500 hover:text-[#00D4B4] transition-colors"
+                            className="text-[10px] text-zinc-500 hover:text-positive transition-colors"
                           >
                             View →
                           </a>
@@ -159,18 +159,18 @@ export function MyPredictionsPanel({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-[#1e2d45] p-3 flex gap-2 shrink-0">
+          <div className="border-t border-rim p-3 flex gap-2 shrink-0">
             <a
               href="/leaderboard"
               onClick={() => setOpen(false)}
-              className="flex-1 text-center py-2 text-xs font-bold text-zinc-400 border border-[#1e2d45] rounded-xl hover:text-white hover:bg-[#1e2d45] transition-colors"
+              className="flex-1 text-center py-2 text-xs font-bold text-zinc-400 border border-rim rounded-xl hover:text-white hover:bg-rim transition-colors"
             >
               Leaderboard
             </a>
             <a
               href="/rules"
               onClick={() => setOpen(false)}
-              className="flex-1 text-center py-2 text-xs font-bold text-zinc-400 border border-[#1e2d45] rounded-xl hover:text-white hover:bg-[#1e2d45] transition-colors"
+              className="flex-1 text-center py-2 text-xs font-bold text-zinc-400 border border-rim rounded-xl hover:text-white hover:bg-rim transition-colors"
             >
               Rules
             </a>

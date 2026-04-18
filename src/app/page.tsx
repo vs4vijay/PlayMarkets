@@ -29,22 +29,22 @@ function filterMatches(matches: CricketMatch[], tab: FilterTab): CricketMatch[] 
 
 function MatchSkeleton() {
   return (
-    <div className="rounded-2xl bg-[#0e1628] border border-[#1e2d45] overflow-hidden animate-pulse">
-      <div className="h-9 bg-[#1e2d45]" />
+    <div className="rounded-2xl bg-surface border border-rim overflow-hidden animate-pulse">
+      <div className="h-9 bg-rim" />
       <div className="p-4 flex items-center justify-between">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-full bg-[#1e2d45]" />
-          <div className="w-10 h-3 rounded bg-[#1e2d45]" />
-          <div className="w-20 h-3 rounded bg-[#1e2d45]" />
+          <div className="w-14 h-14 rounded-full bg-rim" />
+          <div className="w-10 h-3 rounded bg-rim" />
+          <div className="w-20 h-3 rounded bg-rim" />
         </div>
-        <div className="w-16 h-8 rounded bg-[#1e2d45]" />
+        <div className="w-16 h-8 rounded bg-rim" />
         <div className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-full bg-[#1e2d45]" />
-          <div className="w-10 h-3 rounded bg-[#1e2d45]" />
-          <div className="w-20 h-3 rounded bg-[#1e2d45]" />
+          <div className="w-14 h-14 rounded-full bg-rim" />
+          <div className="w-10 h-3 rounded bg-rim" />
+          <div className="w-20 h-3 rounded bg-rim" />
         </div>
       </div>
-      <div className="h-10 bg-[#1e2d45]/50" />
+      <div className="h-10 bg-rim/50" />
     </div>
   );
 }
@@ -69,7 +69,7 @@ export default function Home() {
   const [userPredictions, setUserPredictions] = useState<Map<string, Prediction>>(new Map());
 
   const userId   = user?.id   ?? '';
-  const userName = user?.name ?? 'Fan'; // still used for reactions
+  const userName = user?.name ?? 'Fan';
 
   // ── Load matches ────────────────────────────────────────────────────────────
 
@@ -139,24 +139,24 @@ export default function Home() {
     section === 'LIVE' ? live : section === 'RECENT' ? recent : upcoming;
 
   return (
-    <div className="min-h-screen bg-[#070d1a] text-white">
+    <div className="min-h-screen bg-background text-white">
       {/* ── Hero ──────────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#003791]/40 via-[#070d1a]/80 to-[#070d1a] px-4 py-14 md:py-20">
+      <section className="relative overflow-hidden hero-gradient px-4 py-14 md:py-20">
         <div className="absolute inset-0 opacity-30 pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-72 h-72 bg-[#003791] rounded-full blur-[120px]" />
-          <div className="absolute top-10 right-1/4 w-48 h-48 bg-[#FF7722] rounded-full blur-[100px]" />
+          <div className="absolute top-0 left-1/4 w-72 h-72 bg-brand rounded-full blur-[120px]" />
+          <div className="absolute top-10 right-1/4 w-48 h-48 bg-accent rounded-full blur-[100px]" />
         </div>
         <div className="relative max-w-5xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#FF7722]/15 border border-[#FF7722]/30 mb-5">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-accent/15 border border-accent/30 mb-5">
             <LiveDot />
-            <span className="text-xs font-semibold text-[#FF7722]">
+            <span className="text-xs font-semibold text-accent">
               {live.length > 0
                 ? `${live.length} match${live.length > 1 ? 'es' : ''} in progress`
                 : 'Live sports · social predictions'}
             </span>
           </div>
           <h1 className="text-5xl md:text-7xl font-black tracking-tight mb-3">
-            <span className="text-[#FF7722]">Play</span>
+            <span className="text-accent">Play</span>
             <span className="text-white">Markets</span>
           </h1>
           <p className="text-lg md:text-xl text-zinc-300 max-w-xl mx-auto">
@@ -166,7 +166,7 @@ export default function Home() {
             <p className="mt-4 text-sm text-zinc-500">
               {upcoming.length} upcoming match{upcoming.length > 1 ? 'es' : ''} open for prediction
               {userPredictions.size > 0 && (
-                <> · <span className="text-[#FF7722]">{userPredictions.size} predicted</span></>
+                <> · <span className="text-accent">{userPredictions.size} predicted</span></>
               )}
             </p>
           )}
@@ -174,7 +174,7 @@ export default function Home() {
       </section>
 
       {/* ── Filter Tabs ───────────────────────────────────────────────── */}
-      <section className="sticky top-16 z-40 bg-[#070d1a]/95 backdrop-blur-md border-b border-[#1e2d45]">
+      <section className="sticky top-16 z-40 bg-background/95 backdrop-blur-md border-b border-rim">
         <div className="max-w-5xl mx-auto px-4 py-2.5">
           <div className="flex gap-1.5 overflow-x-auto">
             {tabs.map((tab) => (
@@ -183,8 +183,8 @@ export default function Home() {
                 onClick={() => setFilter(tab.value)}
                 className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all flex items-center gap-1.5 ${
                   filter === tab.value
-                    ? 'bg-[#FF7722] text-white'
-                    : 'bg-[#0e1628] text-zinc-400 hover:text-white hover:bg-[#1e2d45]'
+                    ? 'bg-accent text-white'
+                    : 'bg-surface text-zinc-400 hover:text-white hover:bg-rim'
                 }`}
               >
                 {tab.dot && <LiveDot />}
@@ -205,13 +205,13 @@ export default function Home() {
             {([
               { value: 'LIVE',     label: 'Live Now', count: live.length,     activeClass: 'bg-red-600 text-white' },
               { value: 'RECENT',   label: 'Results',  count: recent.length,   activeClass: 'bg-zinc-600 text-white' },
-              { value: 'UPCOMING', label: 'Upcoming', count: upcoming.length, activeClass: 'bg-[#003791] text-white' },
+              { value: 'UPCOMING', label: 'Upcoming', count: upcoming.length, activeClass: 'bg-brand text-white' },
             ] as const).map((s) => (
               <button
                 key={s.value}
                 onClick={() => setSection(s.value)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  section === s.value ? s.activeClass : 'bg-[#0e1628] text-zinc-400 hover:text-white'
+                  section === s.value ? s.activeClass : 'bg-surface text-zinc-400 hover:text-white'
                 }`}
               >
                 {s.value === 'LIVE' && section === 'LIVE' && <LiveDot />}
@@ -230,7 +230,7 @@ export default function Home() {
             <p className="text-red-400 text-sm mb-3">Failed to load matches: {error}</p>
             <button
               onClick={loadMatches}
-              className="px-4 py-2 bg-[#003791] text-white rounded-lg text-sm hover:bg-[#0047c2] transition-colors"
+              className="px-4 py-2 bg-brand text-white rounded-lg text-sm hover:opacity-90 transition-opacity"
             >
               Retry
             </button>
