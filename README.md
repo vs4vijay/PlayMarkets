@@ -10,4 +10,18 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 
 
-![PlayMarkets](.images/image.png)
+![PlayMarkets](.images/home.png)
+
+---
+
+![PlayMarkets](.images/match.png)
+
+---
+
+![PlayMarkets](.images/upcoming.png)
+
+---
+
+![PlayMarkets](.images/rules.png)
+
+---

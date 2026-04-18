@@ -119,10 +119,12 @@ interface CricketMatchCardProps {
   onReact: (matchId: string, eventId: string | undefined, type: ReactionType) => void;
   userReactions: Set<string>;
   prediction?: Prediction;
+  /** @deprecated — navigation now goes to /match/[matchId]. Kept for API compat but unused. */
   onPredictClick?: () => void;
+  showPredictCta?: boolean;
 }
 
-export function CricketMatchCard({ match, onReact, userReactions, prediction, onPredictClick }: CricketMatchCardProps) {
+export function CricketMatchCard({ match, onReact, userReactions, prediction, showPredictCta = true }: CricketMatchCardProps) {
   const [showEvents, setShowEvents] = useState(false);
 
   const reactionTypes: ReactionType[] = ['🔥', '💪', '😭', '🙌', '😱', '👀'];
@@ -141,7 +143,10 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, on
       `}
     >
       {/* ── Header ──────────────────────────────────────────────────────────── */}
-      <div className="px-4 py-2.5 flex items-center justify-between bg-white/[0.03] border-b border-[#1e2d45]">
+      <a
+        href={`/match/${match.id}`}
+        className="px-4 py-2.5 flex items-center justify-between bg-white/[0.03] border-b border-[#1e2d45] hover:bg-white/[0.06] transition-colors"
+      >
         <div className="flex items-center gap-2 min-w-0">
           <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${getMatchTypeBadge(match.matchType)}`}>
             {match.matchType}
@@ -151,7 +156,7 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, on
         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${badge.cls}`}>
           {badge.label}
         </span>
-      </div>
+      </a>
 
       {/* ── Teams + Score ────────────────────────────────────────────────────── */}
       <div className="px-4 py-4">
@@ -275,10 +280,10 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, on
       )}
 
       {/* ── Prediction strip ─────────────────────────────────────────────────── */}
-      {onPredictClick && !['COMPLETED', 'ABANDONED', 'CANCELLED'].includes(match.status) && (
+      {showPredictCta && !['COMPLETED', 'ABANDONED', 'CANCELLED'].includes(match.status) && (
         <div className="border-t border-[#1e2d45] px-3 py-2.5">
           {prediction ? (
-            /* Already predicted — show compact summary */
+            /* Already predicted — show compact summary + edit link */
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2 min-w-0">
                 <div
@@ -296,22 +301,22 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, on
                   )}
                 </div>
               </div>
-              <button
-                onClick={onPredictClick}
+              <a
+                href={`/match/${match.id}`}
                 className="shrink-0 px-2.5 py-1 text-[10px] font-bold text-zinc-400 border border-[#2d3d55] rounded-lg hover:text-white hover:border-zinc-500 transition-colors"
               >
                 Edit
-              </button>
+              </a>
             </div>
           ) : (
             /* Not yet predicted — CTA */
-            <button
-              onClick={onPredictClick}
+            <a
+              href={`/match/${match.id}`}
               className="w-full flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90 active:scale-[0.98]"
               style={{ background: 'linear-gradient(90deg, #003791 0%, #FF7722 100%)' }}
             >
               <span>🔮</span> Predict this match
-            </button>
+            </a>
           )}
         </div>
       )}
@@ -332,23 +337,23 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, on
               {(prediction.points ?? 0) > 0 ? '+' : ''}{prediction.points ?? 0} pts
             </span>
             <a
-              href={`/leaderboard/${match.id}`}
+              href={`/match/${match.id}`}
               className="text-[10px] text-zinc-500 hover:text-[#00D4B4] transition-colors"
             >
-              Rankings →
+              View →
             </a>
           </div>
         </div>
       )}
 
-      {/* Completed but no prediction — just rankings link */}
+      {/* Completed but no prediction — just view link */}
       {match.status === 'COMPLETED' && !prediction && (
         <div className="border-t border-[#1e2d45] px-3 py-2 flex items-center justify-end">
           <a
-            href={`/leaderboard/${match.id}`}
+            href={`/match/${match.id}`}
             className="text-[10px] font-semibold text-[#00D4B4] hover:underline flex items-center gap-1"
           >
-            🏆 Rankings
+            View Match →
           </a>
         </div>
       )}

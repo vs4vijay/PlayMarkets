@@ -1,10 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { getMatches, getUserPredictions, savePrediction } from '@/lib/api';
+import { getMatches, getUserPredictions } from '@/lib/api';
 import { CricketMatchCard } from '@/components/CricketMatchCard';
 import { MyPredictionsPanel } from '@/components/Predictions';
-import { PredictionModal } from '@/components/PredictionModal';
 import { addReaction, getUserReactionTypes } from '@/store/reactions';
 import { useUser } from '@/components/UserProvider';
 import type { CricketMatch, MatchStatus, ReactionType, Prediction } from '@/types';
@@ -60,7 +59,7 @@ function LiveDot() {
 }
 
 export default function Home() {
-  const { user, refreshBalance } = useUser();
+  const { user } = useUser();
   const [matches,         setMatches]         = useState<CricketMatch[]>([]);
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState<string | null>(null);
@@ -68,10 +67,9 @@ export default function Home() {
   const [section,         setSection]         = useState<SectionView>('LIVE');
   const [userReactions,   setUserReactions]   = useState<Map<string, Set<string>>>(new Map());
   const [userPredictions, setUserPredictions] = useState<Map<string, Prediction>>(new Map());
-  const [modalMatchId,    setModalMatchId]    = useState<string | null>(null);
 
   const userId   = user?.id   ?? '';
-  const userName = user?.name ?? 'Fan';
+  const userName = user?.name ?? 'Fan'; // still used for reactions
 
   // ── Load matches ────────────────────────────────────────────────────────────
 
@@ -128,49 +126,6 @@ export default function Home() {
     setUserReactions((prev) => new Map(prev).set(key, new Set(types)));
   };
 
-  // ── Prediction handlers ──────────────────────────────────────────────────────
-
-  const handlePredictionSubmit = useCallback((
-    winner: string,
-    homeRuns: number,
-    awayRuns: number,
-  ) => {
-    if (!modalMatchId || !userId) return;
-    const existing = userPredictions.get(modalMatchId);
-
-    const pred: Prediction = {
-      id:                existing?.id ?? `pred-${modalMatchId}-${userId}-${Date.now()}`,
-      matchId:           modalMatchId,
-      userId,
-      userName,
-      predictedWinner:   winner,
-      predictedHomeRuns: homeRuns,
-      predictedAwayRuns: awayRuns,
-      isPublic:          true,
-      createdAt:         existing?.createdAt ?? new Date(),
-      scored:            false,
-    };
-
-    // Optimistic update.
-    setUserPredictions((prev) => new Map(prev).set(modalMatchId, pred));
-    setModalMatchId(null);
-
-    // Persist to server — update prediction + refresh balance on success.
-    savePrediction({
-      userId, userName, matchId: modalMatchId,
-      predictedWinner: winner,
-      predictedHomeRuns: homeRuns,
-      predictedAwayRuns: awayRuns,
-      isPublic: true,
-    }).then(({ prediction: saved, balance }) => {
-      setUserPredictions((prev) => new Map(prev).set(modalMatchId, saved));
-      // If server returned the updated balance (new prediction), apply it.
-      if (typeof balance === 'number') {
-        refreshBalance();
-      }
-    }).catch(() => {/* keep optimistic state */});
-  }, [modalMatchId, userId, userName, userPredictions]);
-
   // ── Tabs ─────────────────────────────────────────────────────────────────────
 
   const tabs: { label: string; value: FilterTab; count: number; dot?: boolean }[] = [
@@ -182,8 +137,6 @@ export default function Home() {
 
   const sectionMatches =
     section === 'LIVE' ? live : section === 'RECENT' ? recent : upcoming;
-
-  const modalMatch = modalMatchId ? matches.find((m) => m.id === modalMatchId) : null;
 
   return (
     <div className="min-h-screen bg-[#070d1a] text-white">
@@ -316,11 +269,7 @@ export default function Home() {
                   onReact={handleReaction}
                   userReactions={userReactions.get(match.id) ?? new Set()}
                   prediction={userPredictions.get(match.id)}
-                  onPredictClick={
-                    userId && !['COMPLETED', 'ABANDONED', 'CANCELLED'].includes(match.status)
-                      ? () => setModalMatchId(match.id)
-                      : undefined
-                  }
+                  showPredictCta={!!userId}
                 />
               ))}
             </div>
@@ -333,17 +282,6 @@ export default function Home() {
         <MyPredictionsPanel
           matches={matches}
           userPredictions={userPredictions}
-          onPredictMatch={(matchId) => setModalMatchId(matchId)}
-        />
-      )}
-
-      {/* ── Prediction Modal ──────────────────────────────────────────── */}
-      {modalMatch && (
-        <PredictionModal
-          match={modalMatch}
-          existing={userPredictions.get(modalMatch.id)}
-          onSubmit={handlePredictionSubmit}
-          onClose={() => setModalMatchId(null)}
         />
       )}
     </div>

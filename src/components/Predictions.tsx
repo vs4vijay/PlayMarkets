@@ -1,7 +1,7 @@
 'use client';
 
 // MyPredictionsPanel — a read-only FAB that shows a summary of all predictions.
-// Prediction entry now happens inline on match cards via PredictionModal.
+// Editing predictions navigates to /match/[matchId].
 
 import { useState } from 'react';
 import type { CricketMatch, Prediction } from '@/types';
@@ -9,13 +9,11 @@ import type { CricketMatch, Prediction } from '@/types';
 interface MyPredictionsPanelProps {
   matches: CricketMatch[];
   userPredictions: Map<string, Prediction>;
-  onPredictMatch?: (matchId: string) => void;
 }
 
 export function MyPredictionsPanel({
   matches,
   userPredictions,
-  onPredictMatch,
 }: MyPredictionsPanelProps) {
   const [open, setOpen] = useState(false);
 
@@ -135,20 +133,21 @@ export function MyPredictionsPanel({
                             {pts !== undefined && pts > 0 ? `+${pts}` : pts ?? 0} pts
                           </p>
                         )}
-                        {isUpcoming && onPredictMatch && (
-                          <button
-                            onClick={() => { setOpen(false); onPredictMatch(match.id); }}
+                        {isUpcoming && (
+                          <a
+                            href={`/match/${match.id}`}
+                            onClick={() => setOpen(false)}
                             className="text-[10px] text-zinc-500 hover:text-white border border-[#2d3d55] hover:border-zinc-500 px-2 py-0.5 rounded-md transition-colors"
                           >
                             Edit
-                          </button>
+                          </a>
                         )}
                         {!isUpcoming && (
                           <a
-                            href={`/leaderboard/${match.id}`}
+                            href={`/match/${match.id}`}
                             className="text-[10px] text-zinc-500 hover:text-[#00D4B4] transition-colors"
                           >
-                            Rankings →
+                            View →
                           </a>
                         )}
                       </div>
