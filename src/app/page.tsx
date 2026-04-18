@@ -9,7 +9,6 @@ import { useUser } from '@/components/UserProvider';
 import type { CricketMatch, MatchStatus, ReactionType, Prediction } from '@/types';
 
 type FilterTab = 'ALL' | 'LIVE' | 'COMPLETED' | 'UPCOMING';
-type SectionView = 'LIVE' | 'RECENT' | 'UPCOMING';
 
 const LIVE_STATUSES: MatchStatus[] = ['LIVE', 'TOSS', 'INNINGS_BREAK', 'DRINKS', 'LUNCH', 'TEA', 'STUMPS', 'RAIN_DELAY'];
 
@@ -64,7 +63,6 @@ export default function Home() {
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState<string | null>(null);
   const [filter,          setFilter]          = useState<FilterTab>('ALL');
-  const [section,         setSection]         = useState<SectionView>('LIVE');
   const [userReactions,   setUserReactions]   = useState<Map<string, Set<string>>>(new Map());
   const [userPredictions, setUserPredictions] = useState<Map<string, Prediction>>(new Map());
 
@@ -79,8 +77,6 @@ export default function Home() {
     getMatches()
       .then((data) => {
         setMatches(data);
-        const { live } = categorize(data);
-        if (live.length === 0) setSection('RECENT');
       })
       .catch((e: Error) => setError(e.message))
       .finally(() => setLoading(false));
@@ -109,8 +105,6 @@ export default function Home() {
       getMatches()
         .then((data) => {
           setMatches(data);
-          const { live: updatedLive } = categorize(data);
-          if (updatedLive.length === 0) setSection((s) => s === 'LIVE' ? 'RECENT' : s);
         })
         .catch(() => {});
     }, 30_000);
@@ -134,9 +128,6 @@ export default function Home() {
     { label: 'Results',  value: 'COMPLETED', count: recent.length },
     { label: 'Upcoming', value: 'UPCOMING',  count: upcoming.length },
   ];
-
-  const sectionMatches =
-    section === 'LIVE' ? live : section === 'RECENT' ? recent : upcoming;
 
   return (
     <div className="min-h-screen bg-background text-white">
@@ -198,31 +189,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Section toggles (ALL view only) ──────────────────────────── */}
-      {filter === 'ALL' && !loading && (
-        <section className="max-w-5xl mx-auto px-4 pt-5">
-          <div className="flex gap-2">
-            {([
-              { value: 'LIVE',     label: 'Live Now', count: live.length,     activeClass: 'bg-red-600 text-white' },
-              { value: 'RECENT',   label: 'Results',  count: recent.length,   activeClass: 'bg-zinc-600 text-white' },
-              { value: 'UPCOMING', label: 'Upcoming', count: upcoming.length, activeClass: 'bg-brand text-white' },
-            ] as const).map((s) => (
-              <button
-                key={s.value}
-                onClick={() => setSection(s.value)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-all flex items-center gap-1.5 ${
-                  section === s.value ? s.activeClass : 'bg-surface text-zinc-400 hover:text-white'
-                }`}
-              >
-                {s.value === 'LIVE' && section === 'LIVE' && <LiveDot />}
-                {s.label}
-                <span className="text-xs opacity-70">({s.count})</span>
-              </button>
-            ))}
-          </div>
-        </section>
-      )}
-
       {/* ── Match Grid ────────────────────────────────────────────────── */}
       <main className="max-w-5xl mx-auto px-4 pt-5 pb-28">
         {error && (
@@ -244,33 +210,73 @@ export default function Home() {
         )}
 
         {!loading && !error && (() => {
-          const displayMatches = filter === 'ALL' ? sectionMatches : filteredMatches;
-          if (displayMatches.length === 0) {
+          if (filter !== 'ALL') {
+            if (filteredMatches.length === 0) {
+              return (
+                <div className="text-center py-16">
+                  <span className="text-5xl">🏏</span>
+                  <p className="text-zinc-500 text-sm mt-4">
+                    {filter === 'LIVE'      && 'No live matches right now'}
+                    {filter === 'COMPLETED' && 'No recent results'}
+                    {filter === 'UPCOMING'  && 'No upcoming matches'}
+                  </p>
+                </div>
+              );
+            }
             return (
-              <div className="text-center py-16">
-                <span className="text-5xl">🏏</span>
-                <p className="text-zinc-500 text-sm mt-4">
-                  {filter === 'LIVE'      && 'No live matches right now'}
-                  {filter === 'COMPLETED' && 'No recent results'}
-                  {filter === 'UPCOMING'  && 'No upcoming matches'}
-                  {filter === 'ALL' && section === 'LIVE'    && 'No live matches right now'}
-                  {filter === 'ALL' && section === 'RECENT'  && 'No recent results'}
-                  {filter === 'ALL' && section === 'UPCOMING' && 'No upcoming matches'}
-                </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredMatches.map((match) => (
+                  <CricketMatchCard
+                    key={match.id}
+                    match={match}
+                    onReact={handleReaction}
+                    userReactions={userReactions.get(match.id) ?? new Set()}
+                    prediction={userPredictions.get(match.id)}
+                    showPredictCta={!!userId}
+                  />
+                ))}
               </div>
             );
           }
+
+          // ALL view — grouped by status
+          const groups = [
+            { label: 'Live Now', matches: live, dot: true },
+            { label: 'Upcoming', matches: upcoming, dot: false },
+            { label: 'Results',  matches: recent,   dot: false },
+          ].filter((g) => g.matches.length > 0);
+
+          if (groups.length === 0) {
+            return (
+              <div className="text-center py-16">
+                <span className="text-5xl">🏏</span>
+                <p className="text-zinc-500 text-sm mt-4">No matches available</p>
+              </div>
+            );
+          }
+
           return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {displayMatches.map((match) => (
-                <CricketMatchCard
-                  key={match.id}
-                  match={match}
-                  onReact={handleReaction}
-                  userReactions={userReactions.get(match.id) ?? new Set()}
-                  prediction={userPredictions.get(match.id)}
-                  showPredictCta={!!userId}
-                />
+            <div className="space-y-8">
+              {groups.map((g) => (
+                <div key={g.label}>
+                  <h2 className="flex items-center gap-2 text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-3">
+                    {g.dot && <LiveDot />}
+                    {g.label}
+                    <span className="text-zinc-600">({g.matches.length})</span>
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {g.matches.map((match) => (
+                      <CricketMatchCard
+                        key={match.id}
+                        match={match}
+                        onReact={handleReaction}
+                        userReactions={userReactions.get(match.id) ?? new Set()}
+                        prediction={userPredictions.get(match.id)}
+                        showPredictCta={!!userId}
+                      />
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           );

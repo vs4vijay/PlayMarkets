@@ -547,6 +547,9 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
               </section>
             )}
 
+            {/* Match info / points breakdown */}
+            <MatchInfoCard match={match} />
+
             {/* Match Leaderboard */}
             <MatchLeaderboardSection matchId={matchId} match={match} currentUserId={userId} />
           </div>
@@ -583,6 +586,85 @@ export default function MatchPage(props: { params: Promise<{ matchId: string }> 
             </div>
           </div>
 
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Match Info Card ────────────────────────────────────────────────────────────
+
+function MatchInfoCard({ match }: { match: CricketMatch }) {
+  const tol       = scoreTolerance(match.matchType);
+  const mult      = earlyMult(match);
+  const multLabel = earlyLabel(match);
+  const winnerPts = Math.round(10 * mult);
+  const bonusPts  = Math.round(5  * mult);
+  const maxPts    = Math.round(20 * mult);
+  const isUpcoming = match.status === 'UPCOMING';
+
+  return (
+    <div className="space-y-4">
+      {/* Early bird banner — upcoming only */}
+      {isUpcoming && multLabel && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-positive/10 border border-positive/20">
+          <span className="text-lg">⚡</span>
+          <div>
+            <p className="text-xs font-bold text-positive">{multLabel}</p>
+            <p className="text-[10px] text-zinc-500">Predict early for a bonus multiplier on all points</p>
+          </div>
+        </div>
+      )}
+
+      {/* Points up for grabs */}
+      <div className="rounded-2xl border border-rim bg-surface p-4">
+        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3">Points up for grabs</p>
+        <div className="space-y-2.5">
+          {[
+            { label: 'Pick the winner',         pts: `+${winnerPts}` },
+            { label: `Home score ±${tol} runs`, pts: `+${bonusPts}` },
+            { label: `Away score ±${tol} runs`, pts: `+${bonusPts}` },
+          ].map((r) => (
+            <div key={r.label} className="flex items-center justify-between text-xs">
+              <span className="text-zinc-400">{r.label}</span>
+              <span className="font-bold text-positive">{r.pts}</span>
+            </div>
+          ))}
+          {mult > 1 && (
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-zinc-400">Early Bird multiplier</span>
+              <span className="font-bold text-accent">×{mult}</span>
+            </div>
+          )}
+          <div className="flex items-center justify-between pt-2.5 border-t border-rim">
+            <span className="text-sm font-bold text-white">Max possible</span>
+            <span className="font-black text-accent text-lg">+{maxPts} pts</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Match details */}
+      <div className="rounded-2xl border border-rim bg-surface p-4">
+        <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider mb-3">Match details</p>
+        <div className="space-y-2 text-xs text-zinc-400">
+          <div className="flex items-center gap-2.5">
+            <span>🏏</span>
+            <span>{match.matchType}{match.series ? ` · ${match.series}` : ''}</span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span>📅</span>
+            <span>
+              {match.startTime.toLocaleString('en-IN', {
+                day: 'numeric', month: 'short',
+                hour: '2-digit', minute: '2-digit', hour12: true,
+                timeZone: 'Asia/Kolkata',
+              })} IST
+            </span>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <span>📍</span>
+            <span>{match.venue}</span>
+          </div>
         </div>
       </div>
     </div>
