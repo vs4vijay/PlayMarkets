@@ -242,6 +242,13 @@ src/
 
 ---
 
+## Git workflow
+
+- Do **not** run `git commit` or `git push` unless the user explicitly asks.
+- Make all file changes first, then wait for the user to review and commit.
+
+---
+
 ## What NOT to do
 
 - Do not mock storage in tests — use the real in-memory backend.
