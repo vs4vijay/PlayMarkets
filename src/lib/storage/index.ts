@@ -9,13 +9,17 @@
 import path from 'node:path';
 import type { PredictionStore } from './types';
 import type { UserStore } from './userTypes';
+import type { ReactionStore } from './reactionTypes';
 import { memoryStore } from './memory';
 import { memoryUserStore } from './userMemory';
+import { reactionStore } from './reactionMemory';
 import { makeJsonStore } from './json';
 import { makeJsonUserStore } from './userJson';
+import { makeJsonReactionStore } from './reactionJson';
 
 export type { PredictionStore } from './types';
 export type { UserStore } from './userTypes';
+export type { ReactionStore } from './reactionTypes';
 
 function storagePath(): string {
   return path.join(
@@ -44,6 +48,23 @@ export function getStore(): PredictionStore {
     case 'memory':
     default:
       return memoryStore;
+  }
+}
+
+export function getReactionStore(): ReactionStore {
+  switch (backend()) {
+    case 'json':
+      return makeJsonReactionStore(path.join(storagePath(), 'reactions.json'));
+
+    case 'sqlite': {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const { makeSqliteReactionStore } = require(/* turbopackIgnore: true */ './reactionSqlite') as typeof import('./reactionSqlite');
+      return makeSqliteReactionStore(path.join(storagePath(), 'playmarkets.db'));
+    }
+
+    case 'memory':
+    default:
+      return reactionStore;
   }
 }
 

@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { getMatches, getUserPredictions } from '@/lib/api';
 import { CricketMatchCard } from '@/components/CricketMatchCard';
 import { MyPredictionsPanel } from '@/components/Predictions';
-import { addReaction, getUserReactionTypes } from '@/store/reactions';
 import { useUser } from '@/components/UserProvider';
-import type { CricketMatch, MatchStatus, ReactionType, Prediction } from '@/types';
+import type { CricketMatch, MatchStatus, Prediction } from '@/types';
 
 type FilterTab = 'ALL' | 'LIVE' | 'COMPLETED' | 'UPCOMING';
 
@@ -63,7 +62,6 @@ export default function Home() {
   const [loading,         setLoading]         = useState(true);
   const [error,           setError]           = useState<string | null>(null);
   const [filter,          setFilter]          = useState<FilterTab>('ALL');
-  const [userReactions,   setUserReactions]   = useState<Map<string, Set<string>>>(new Map());
   const [userPredictions, setUserPredictions] = useState<Map<string, Prediction>>(new Map());
 
   const userId   = user?.id   ?? '';
@@ -110,15 +108,6 @@ export default function Home() {
     }, 30_000);
     return () => clearInterval(id);
   }, [hasLiveMatches]);
-
-  // ── Reactions ────────────────────────────────────────────────────────────────
-
-  const handleReaction = (matchId: string, eventId: string | undefined, type: ReactionType) => {
-    addReaction(matchId, eventId, type, userId, userName);
-    const types = getUserReactionTypes(matchId, eventId, userId);
-    const key   = eventId ? `${matchId}:${eventId}` : matchId;
-    setUserReactions((prev) => new Map(prev).set(key, new Set(types)));
-  };
 
   // ── Tabs ─────────────────────────────────────────────────────────────────────
 
@@ -229,8 +218,6 @@ export default function Home() {
                   <CricketMatchCard
                     key={match.id}
                     match={match}
-                    onReact={handleReaction}
-                    userReactions={userReactions.get(match.id) ?? new Set()}
                     prediction={userPredictions.get(match.id)}
                     showPredictCta={!!userId}
                   />
@@ -269,8 +256,6 @@ export default function Home() {
                       <CricketMatchCard
                         key={match.id}
                         match={match}
-                        onReact={handleReaction}
-                        userReactions={userReactions.get(match.id) ?? new Set()}
                         prediction={userPredictions.get(match.id)}
                         showPredictCta={!!userId}
                       />

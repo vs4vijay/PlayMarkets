@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { CricketMatch, CricketScore, ReactionType, CricketEventType, Prediction } from '@/types';
+import { useUser } from '@/components/UserProvider';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -114,22 +115,66 @@ function TeamAvatar({
 
 // ── Main Component ────────────────────────────────────────────────────────────
 
+const REACTION_TYPES: ReactionType[] = ['🔥', '💪', '😭', '🙌', '😱', '👀'];
+const EMPTY_COUNTS = Object.fromEntries(REACTION_TYPES.map((t) => [t, 0])) as Record<ReactionType, number>;
+
 interface CricketMatchCardProps {
   match: CricketMatch;
-  onReact: (matchId: string, eventId: string | undefined, type: ReactionType) => void;
-  userReactions: Set<string>;
   prediction?: Prediction;
-  /** @deprecated — navigation now goes to /match/[matchId]. Kept for API compat but unused. */
-  onPredictClick?: () => void;
   showPredictCta?: boolean;
 }
 
-export function CricketMatchCard({ match, onReact, userReactions, prediction, showPredictCta = true }: CricketMatchCardProps) {
-  const [showEvents, setShowEvents] = useState(false);
+export function CricketMatchCard({ match, prediction, showPredictCta = true }: CricketMatchCardProps) {
+  const { user } = useUser();
+  const [showEvents,    setShowEvents]    = useState(false);
+  const [counts,        setCounts]        = useState<Record<ReactionType, number>>(EMPTY_COUNTS);
+  const [userReacted,   setUserReacted]   = useState<Set<ReactionType>>(new Set());
 
-  const reactionTypes: ReactionType[] = ['🔥', '💪', '😭', '🙌', '😱', '👀'];
-  const badge = getStatusBadge(match.status);
+  const badge  = getStatusBadge(match.status);
   const isLive = match.status === 'LIVE' || match.status === 'INNINGS_BREAK';
+
+  // Fetch reaction counts (+ user's reactions if logged in) on mount
+  useEffect(() => {
+    const qs = user?.id ? `?userId=${encodeURIComponent(user.id)}` : '';
+    fetch(`/api/reactions/${encodeURIComponent(match.id)}${qs}`, { cache: 'no-store' })
+      .then((r) => r.json())
+      .then((d: { counts: Record<ReactionType, number>; userReactions: ReactionType[] }) => {
+        setCounts(d.counts);
+        setUserReacted(new Set(d.userReactions));
+      })
+      .catch(() => {});
+  }, [match.id, user?.id]);
+
+  const handleReact = (type: ReactionType) => {
+    if (!user) return;
+    // Optimistic update
+    const wasActive = userReacted.has(type);
+    setCounts((prev) => ({ ...prev, [type]: Math.max(0, prev[type] + (wasActive ? -1 : 1)) }));
+    setUserReacted((prev) => {
+      const next = new Set(prev);
+      wasActive ? next.delete(type) : next.add(type);
+      return next;
+    });
+    fetch('/api/reactions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ matchId: match.id, type, userId: user.id, userName: user.name }),
+    })
+      .then((r) => r.json())
+      .then((d: { counts: Record<ReactionType, number>; userReactions: ReactionType[] }) => {
+        setCounts(d.counts);
+        setUserReacted(new Set(d.userReactions));
+      })
+      .catch(() => {
+        // Revert optimistic update on failure
+        setCounts((prev) => ({ ...prev, [type]: Math.max(0, prev[type] + (wasActive ? 1 : -1)) }));
+        setUserReacted((prev) => {
+          const next = new Set(prev);
+          wasActive ? next.add(type) : next.delete(type);
+          return next;
+        });
+      });
+  };
 
   const hasScore = match.homeScore || match.awayScore;
 
@@ -260,12 +305,13 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
                     <span className="text-[11px] text-zinc-300">{ev.description}</span>
                   </div>
                   <div className="flex gap-0.5 shrink-0">
-                    {reactionTypes.slice(0, 3).map((r) => (
+                    {REACTION_TYPES.slice(0, 3).map((r) => (
                       <button
                         key={r}
-                        onClick={() => onReact(match.id, ev.id, r)}
-                        className={`w-6 h-6 rounded-full text-xs flex items-center justify-center hover:scale-110 transition-transform ${
-                          userReactions.has(r) ? 'bg-white/10' : ''
+                        onClick={() => handleReact(r)}
+                        disabled={!user}
+                        className={`w-6 h-6 rounded-full text-xs flex items-center justify-center hover:scale-110 transition-transform disabled:cursor-default ${
+                          userReacted.has(r) ? 'bg-white/10' : ''
                         }`}
                       >
                         {r}
@@ -359,22 +405,34 @@ export function CricketMatchCard({ match, onReact, userReactions, prediction, sh
       )}
 
       {/* ── Reactions Row ────────────────────────────────────────────────────── */}
-      <div className="border-t border-rim px-4 py-2.5 flex items-center justify-between">
-        <div className="flex gap-1">
-          {reactionTypes.map((r) => (
-            <button
-              key={r}
-              onClick={() => onReact(match.id, undefined, r)}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-base hover:scale-110 transition-transform ${
-                userReactions.has(r) ? 'bg-white/10 ring-1 ring-white/20' : 'hover:bg-white/5'
-              }`}
-            >
-              {r}
-            </button>
-          ))}
+      <div className="border-t border-rim px-3 py-2 flex items-center justify-between gap-2">
+        <div className="flex gap-1 flex-wrap">
+          {REACTION_TYPES.map((r) => {
+            const active = userReacted.has(r);
+            const count  = counts[r];
+            return (
+              <button
+                key={r}
+                onClick={() => handleReact(r)}
+                disabled={!user}
+                className={`flex items-center gap-1 px-2 py-1 rounded-full text-sm transition-all hover:scale-105 disabled:cursor-default ${
+                  active
+                    ? 'bg-white/15 ring-1 ring-white/25'
+                    : 'hover:bg-white/8'
+                }`}
+              >
+                {r}
+                {count > 0 && (
+                  <span className={`text-[10px] font-bold leading-none ${active ? 'text-white' : 'text-zinc-500'}`}>
+                    {count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         {isLive && (
-          <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1">
+          <span className="text-[10px] font-semibold text-red-500 flex items-center gap-1 shrink-0">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
             LIVE
           </span>
