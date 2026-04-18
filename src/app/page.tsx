@@ -5,6 +5,7 @@ import { getMatches } from '@/lib/api';
 import { CricketMatchCard } from '@/components/CricketMatchCard';
 import { PredictionsPanel } from '@/components/Predictions';
 import { addReaction, getUserReactionTypes } from '@/store/reactions';
+import { useUser } from '@/components/UserProvider';
 import type { CricketMatch, MatchStatus, ReactionType } from '@/types';
 
 type FilterTab = 'ALL' | 'LIVE' | 'COMPLETED' | 'UPCOMING';
@@ -25,8 +26,6 @@ function filterMatches(matches: CricketMatch[], tab: FilterTab): CricketMatch[] 
   if (tab === 'COMPLETED') return matches.filter((m) => m.status === 'COMPLETED');
   return matches.filter((m) => m.status === 'UPCOMING' || m.status === 'POSTPONED');
 }
-
-const CURRENT_USER = { id: 'user-1', name: 'Fan' };
 
 function MatchSkeleton() {
   return (
@@ -60,6 +59,7 @@ function LiveDot() {
 }
 
 export default function Home() {
+  const { user } = useUser();
   const [matches, setMatches] = useState<CricketMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -85,10 +85,13 @@ export default function Home() {
   const { live, recent, upcoming } = categorize(matches);
   const filteredMatches = filterMatches(matches, filter);
 
+  const userId   = user?.id   ?? 'anonymous';
+  const userName = user?.name ?? 'Fan';
+
   const handleReaction = (matchId: string, eventId: string | undefined, type: ReactionType) => {
-    addReaction(matchId, eventId, type, CURRENT_USER.id, CURRENT_USER.name);
+    addReaction(matchId, eventId, type, userId, userName);
     const key = eventId ? `${matchId}:${eventId}` : matchId;
-    const types = getUserReactionTypes(matchId, eventId, CURRENT_USER.id);
+    const types = getUserReactionTypes(matchId, eventId, userId);
     setUserReactions((prev) => new Map(prev).set(key, new Set(types)));
   };
 
@@ -233,8 +236,8 @@ export default function Home() {
 
       <PredictionsPanel
         matches={matches}
-        userId={CURRENT_USER.id}
-        userName={CURRENT_USER.name}
+        userId={userId}
+        userName={userName}
       />
     </div>
   );
