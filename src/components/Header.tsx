@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useUser } from './UserProvider';
+import { LogoIcon } from './Logo';
 import { STARTING_BALANCE } from '@/types';
 
 export function Header() {
@@ -31,11 +32,8 @@ export function Header() {
       <div className="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <a href="/" className="flex items-center gap-3 group">
-          <div
-            className="w-9 h-9 rounded-xl flex items-center justify-center font-black text-white text-lg group-hover:scale-105 transition-transform"
-            style={{ background: 'linear-gradient(135deg, #003791 0%, #FF7722 100%)' }}
-          >
-            🎯
+          <div className="group-hover:scale-105 transition-transform shrink-0">
+            <LogoIcon size={36} className="rounded-xl overflow-hidden" />
           </div>
           <div>
             <span className="font-black text-lg tracking-tight">

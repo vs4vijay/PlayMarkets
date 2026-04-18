@@ -17,6 +17,12 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "PlayMarkets — The Social Prediction Layer for Live Sports",
   description: "Live sports scores, fan reactions, and social predictions — predict, react, and compete in real-time",
+  icons: {
+    icon:     '/favicon.svg',
+    shortcut: '/favicon.svg',
+    // For Apple devices, SVG works on iOS 15+ Safari; a PNG fallback can be added later.
+    apple:    '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

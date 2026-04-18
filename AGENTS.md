@@ -15,6 +15,7 @@ A Next.js 16 sports fan engagement platform focused on Indian cricket (IPL + nat
 
 ## Tech Stack
 
+- Bun
 - Next.js 16.2.4 (App Router)
 - React 19.2.4 with TypeScript 5
 - Tailwind CSS 4
@@ -23,11 +24,12 @@ A Next.js 16 sports fan engagement platform focused on Indian cricket (IPL + nat
 ## Commands
 
 ```bash
-npm run dev      # Start dev server (http://localhost:3000)
-npm run build    # Production build
-npm run start    # Start production server
+bun run dev      # Start dev server (http://localhost:3000)
+bun run build    # Production build
+bun run start    # Start production server
 npm run lint     # Run ESLint
 ```
+- DO NOT USE `npm` command, use `bun` always
 
 ## Cricket Data Providers
 
