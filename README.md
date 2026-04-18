@@ -6,6 +6,8 @@ PlayMarkets is a real-time cricket fan engagement platform. Watch live scores, r
 
 ![PlayMarkets — Live matches dashboard](.images/home.png)
 
+**Live demo:** https://play-markets.vercel.app/
+
 ---
 
 ## Features
